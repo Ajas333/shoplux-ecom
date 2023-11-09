@@ -1,0 +1,120 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% block title %} Product Details {% endblock %}
+{% block  body %}
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Add New Product</h2>
+                <div>
+                    
+                   
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Product Details</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-6">
+                            
+                                <div class="mb-4">
+                                    <label class="form-label">Product name</label>
+                                    <div class="row gx-2">
+                                        <input value="{{product.product_name}}" type="text" class="form-control" name="product_name" >
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-4">
+                                    <label class="form-label">SKU_id / Model number </label>
+                                    <input value="{{product.sku_id}}" type="text" class="form-control" name="sku_id" >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Description</label>
+                            <textarea value="{{ product.product_description }}" class="form-control" rows="4" name="product_desc">{{ product.product_description }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="mb-4">
+                                    <label class="form-label">Max price</label>
+                                    <div class="row gx-2">
+                                        <input placeholder="$" value="{{product.max_price}}" type="text" class="form-control" name="product_max_price" >
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-4">
+                                    <label class="form-label">Sale price</label>
+                                    <input placeholder="$" value="{{product.sale_price}}" type="text" class="form-control" name="product_sale_price"    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="mb-4">
+                                    <img src="{{ product.image.url }}" class="img-mb img-thumbnail" alt="Item">
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-4">
+                                    <input class="form-control" type="file"  name="image_feild">
+                                </div>
+                            </div>
+
+                        </div>
+                         
+                        <div class="row">
+                            <div class="col-lg-2">
+                                <div class="mb-4">
+                                    <a href="{% url 'product_details:update_product' product.id %}" class="btn btn-primary btn-sm rounded">Update</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="mb-4">
+                                    <button type="submit" class="btn btn-primary btn-sm rounded col-lg-12">Delete</button>
+                                    
+                                </div>  
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="mb-4">
+                                    <button type="submit" class="btn btn-primary btn-sm rounded col-lg-12">Add veriant</button>
+                                    
+                                </div>  
+                            </div>
+                        </div>
+                        
+                    </div>
+                       
+                       
+                </div>
+            </div> <!-- card end// -->
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Veriants</h2>
+                <div>
+                    
+                   
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    
+    </div>
+</section> 
+
+{% endblock %}
