@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from product_det.models import Category,Brand,Atribute,Atribute_Value,Product,Product_Variant
-from django.forms.formsets import formset_factory
+from .forms import CreateProductForm
 
 # Create your views here.
 
@@ -271,13 +271,8 @@ def add_product(request):
         return HttpResponse("Unauthorized", status=401)
     categories = Category.objects.all()
     brands = Brand.objects.all().exclude(is_active=False)
-    # attribute=Atribute_Value.objects.prefetch_related('atribute_id').all()
     
-     
-    content = {
-        'categories': categories,
-        'brands': brands,        
-    }
+
     if request.method == 'POST':
         product_name= request.POST.get('product_name')
         product_sk_id= request.POST.get('sku_id')
@@ -303,11 +298,15 @@ def add_product(request):
             image=request.FILES['image_feild']  # Make sure your file input field is named 'product_image'
         )
         product.save()
-   
-       
 
-        return redirect('product_details:add_product')
-   
+        return redirect('product_details:product_list')
+    else:
+        form=CreateProductForm()
+    content = {
+        'categories': categories,
+        'brands': brands,   
+        'form': form
+    }
     return render(request,'admin/add_product.html', content)
 
     
@@ -331,36 +330,102 @@ def product_list(request):
 
 
 
-def product_det(request, product_id):
+# def product_det(request, product_id):
 
-    product=get_object_or_404(Product,id=product_id)
-    context={
-        'product':product
+#     product=get_object_or_404(Product,id=product_id)
+#     context={
+#         'product':product
+#     }
+
+#     return render(request,'admin/product_details.html',context)
+
+
+from django.shortcuts import render, redirect
+
+def update_product(request, product_id):
+    print(product_id)
+    if not request.user.is_authenticated:
+        return redirect('adminlog:admin_login')
+
+    try:
+        product = Product.objects.get(id=product_id)
+        product_variants=Product_Variant.objects.filter(product=product)
+    except Product.DoesNotExist:
+        return HttpResponse("Product not found", status=404)
+
+    if request.method == 'POST':
+        form = CreateProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('product_details:product_list')
+        else:
+            print(form.errors)
+            context = {
+                'form': form,
+                'product': product,
+                'product_variants': product_variants,
+            }
+            return render(request, 'admin/product_details.html', context)
+
+    else:
+        form = CreateProductForm(instance=product)
+        # print(form)
+    context = {
+        'form': form,
+        'product': product,
+        'product_variants': product_variants,
     }
+    return render(request, 'admin/product_details.html', context)
 
-    return render(request,'admin/product_details.html',context)
 
-def update_product(request,product_id):
-     
-     product=Product.objects.get(id=product_id)
 
-     if request.method=='POST':
-         product_name=request.POST.get('product_name')
-         sku_id=request.POST.get('sku_id')
-         desc=request.POSt.get('product_desc')
-         max_price=request.POST.get('max_price')
-         sale_price=request.POST.get('sale_price') 
-         print(product_name)
-         product.product_name=product_name
-         product.sku_id=sku_id
-         product.product_description=desc 
-         product.max_price=max_price  
-         product.sale_price=sale_price
+def delete_product(request,product_id):
+    if not request.user.is_authenticated:
+        return redirect('adminlog:admin_login')
+    try:
+        product = Product.objects.get(id=product_id)
+        product.delete()
+        return redirect('product_details:product_list')
+    except Product.DoesNotExist:
+        return HttpResponse("Product not found", status=404)
+    
 
-         if 'image_field' in request.FILES:
-            product.image = request.FILES['image_field']
-         product.save() 
+def add_veriants(request,product_id):
+    if not request.user.is_authenticated:
+        return redirect('adminlog:admin_login')
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return HttpResponse("Product not found", status=404)
+    attributes = Atribute.objects.prefetch_related('atribute_value_set').filter(is_active=True)
 
-         return redirect('product_details:product_list')     
+    attribute_dict = {}
+    for attribute in attributes:
+        attribute_values = attribute.atribute_value_set.filter(is_active=True)
+        attribute_dict[attribute.atribute_name] = attribute_values
+    #to show how many atribute in fronend
+    attribute_values_count = attributes.count() 
 
-     return redirect('product_details:product_list') 
+    if request.method=='POST':
+        stock=request.POST.get('stock')
+        attribute_ids=[]
+        for i in range(1,attribute_values_count+1):
+            req_atri = request.POST.get('atributes_'+str(i))
+            if req_atri != 'None':
+                attribute_ids.append(int(req_atri))
+    
+        verient=Product_Variant(
+            product=product,
+            stock=stock,
+        )    
+        verient.save()
+        verient.atributes.set(attribute_ids)
+        
+
+    context ={
+        "product":product,
+        'attribute_dict':attribute_dict
+    }
+    return render(request, 'admin/add_verients.html',context)
+    
+
