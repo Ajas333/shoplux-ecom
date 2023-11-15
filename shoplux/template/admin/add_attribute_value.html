@@ -1,6 +1,6 @@
 {% extends 'admin/base.html' %}
 {% load static %}
-{% block title %} Category {% endblock %}
+{% block title %} Atribute Value {% endblock %}
 {% block  body %}
 <section class="content-main">
     <div class="content-header">
@@ -50,7 +50,7 @@
                                 {% for attribute_value in attribute_values %}
                                 <tr>
                                     <td>{{attribute_value.id}}</td>
-                                    <td><b>{{attribute_value.atribute_id}}</b></td>
+                                    <td><b>{{attribute_value.atribute.atribute_name}}</b></td>
                                     <td>{{attribute_value.atribute_value}}</td>
                                     <td>
                                         <button  class="{% if not attribute_value.is_active %}btn btn-outline-danger{% else %}btn btn-outline-success{% endif %}">

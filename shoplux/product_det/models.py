@@ -90,7 +90,7 @@ class Product_Variant(models.Model):
         product = models.ForeignKey(Product, on_delete=models.CASCADE)
         atributes = models.ManyToManyField(Atribute_Value,related_name='attributes')
         stock = models.IntegerField()
-        product_variant_slug = models.SlugField(unique=True, blank=True,max_length=200)
+        product_variant_slug = models.SlugField( blank=True,max_length=200)
         thumbnail_image = models.ImageField(upload_to='static/image_admin/items')
         is_active = models.BooleanField(default=True)
         created_at =models.DateTimeField(auto_now_add=True)

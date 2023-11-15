@@ -14,6 +14,8 @@ urlpatterns = [
 
 
     path('add_veriants/<int:product_id>/',views.add_veriants,name='add_veriants'),
+    path('edit_varient/<int:product_variant_id>/',views.edit_varient,name='edit_varient'),
+    path('delete_variant/<int:product_variant_id>/',views.delete_variant,name='delete_variant'),
   
 
 

@@ -10,15 +10,19 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.core.mail import send_mail
 import random
 from django.core.exceptions import ObjectDoesNotExist
+from product_det.models import Product
 
 
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
-   
+    product=Product.objects.all()
+    context={
+        'products':product
+    }
        
-    return render(request, 'user_log/index.html')
+    return render(request, 'user_log/index.html',context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_login(request):
@@ -28,6 +32,15 @@ def user_login(request):
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
+
+        if not Account.objects.filter(email=email).exists():
+            messages.error(request, "Invalid Email Adress")
+            return redirect('log:user_login')
+        
+        if not Account.objects.filter(email=email,is_active=True).exists():
+            messages.error(request, "You are blocked by admin ! Please contact admin ")
+            return redirect('log:user_login') 
+
         user = authenticate(request, email=email, password=password)
      
 
@@ -72,6 +85,7 @@ def user_signup(request):
 
 def sent_otp(request):
     random_num=random.randint(1000,9999)
+    print(random_num)
     request.session['OTP_Key']=random_num
     send_mail(
     "OTP AUTHENTICATING shoplux",
@@ -101,8 +115,8 @@ def verify_otp(request):
 
 def user_logout(request):
     logout(request)
+    return redirect('log:index') 
 
-    return render(request,'user_log/index.html')
 
 
 def forgot_password(request):

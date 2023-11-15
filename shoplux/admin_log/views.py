@@ -10,7 +10,7 @@ from django.views.decorators.cache import cache_control
 
 def admin_login(request):
     if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('adminlog:admin_dashboard')
+        return redirect('admin_dashboard:dashboard')
 
     if request.method == "POST":
         email = request.POST['email']
@@ -20,7 +20,8 @@ def admin_login(request):
             if user.is_superuser:
                 login(request, user)
                 # messages.success(request, "Admin login successful!")
-                return redirect('adminlog:admin_dashboard')  # Use the named URL pattern
+                return redirect('admin_dashboard:dashboard')  # Use the named URL pattern
+
             messages.error(request, "Invalid admin credentials!")
     return render(request, 'admin/admin_login.html')
 

@@ -162,7 +162,7 @@
                                     <div class="dropdown">
                                         <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm"> <i class="material-icons md-more_horiz"></i> </a>
                                         <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#">edit_info</a>
+                                            <a class="dropdown-item" href="{% url 'product_details:edit_varient' product_variant.id %}">edit_info</a>
 
 
                                             <a class="dropdown-item" href="#">{% if product_variant.is_active %}Make Unavailable {% else %}  Make Available {% endif %}</a>

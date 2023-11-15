@@ -2,12 +2,15 @@ from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from product_det.models import Category,Brand,Atribute,Atribute_Value,Product,Product_Variant
 from .forms import CreateProductForm
+from django.views.decorators.cache import cache_control
 
 # Create your views here.
 
 
 # --------------------------------------Categary area----------------------------------------------
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def category(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
@@ -18,6 +21,8 @@ def category(request):
     return render(request, 'admin/product_categories.html',content)
 
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_category(request):
     category_name = request.POST['category_name']
     parent = None if request.POST['parent'] == 'None' else Category.objects.get(category_name=request.POST['parent'])
@@ -32,6 +37,8 @@ def add_category(request):
     return redirect('product_details:category')
 
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def available(request,category_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -59,6 +66,7 @@ def available(request,category_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def delete_category(request,category_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -71,6 +79,7 @@ def delete_category(request,category_id):
     return redirect('product_details:category')
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def edit_category(request,category_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -101,6 +110,7 @@ def edit_category(request,category_id):
 
 # ----------------------------------------------Brand-----------------------------------------------------------------
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def brand(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
@@ -117,6 +127,8 @@ def add_brand(request):
     )
     return redirect('product_details:brand')
     
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def brand_available(request,brand_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -131,6 +143,8 @@ def brand_available(request,brand_id):
     brand.save()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def delete_brand(request,brand_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -147,6 +161,8 @@ def delete_brand(request,brand_id):
 
 
 # -------------------------------------------------------Attribute------------------------------------------------------
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def attribute(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
@@ -156,6 +172,9 @@ def attribute(request):
     }
     return render(request, 'admin/add_attribute.html',content)
 
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_attribute(request):
     attribute_name = request.POST['attribute_name']
     Atribute.objects.create(
@@ -163,6 +182,9 @@ def add_attribute(request):
     )
     return redirect('product_details:attribute')
 
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def attribute_available(request,attribute_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -178,6 +200,7 @@ def attribute_available(request,attribute_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def delete_attribute(request,attribute_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -193,6 +216,7 @@ def delete_attribute(request,attribute_id):
 
 
 # ----------------------------------------------------------Attribute value-------------------------------------------------
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def attribute_value(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
@@ -205,6 +229,7 @@ def attribute_value(request):
     return render(request, 'admin/add_attribute_value.html',content)
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_attribute_value(request):
     if request.method == 'POST':
         attribute_value_n = request.POST.get('attribute_value_name')
@@ -226,6 +251,7 @@ def add_attribute_value(request):
     return render(request, 'admin/add_attribute_value.html', context)
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def attribute_value_available(request,attribute_value_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -265,7 +291,7 @@ def delete_attribute_value(request,attribute_value_id):
 
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_product(request):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
@@ -318,7 +344,7 @@ def add_product(request):
 
 
 #-------------------------------------------------------product list----------------------------------------------
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def product_list(request):
 
     products=Product.objects.all()
@@ -342,6 +368,8 @@ def product_list(request):
 
 from django.shortcuts import render, redirect
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def update_product(request, product_id):
     print(product_id)
     if not request.user.is_authenticated:
@@ -378,7 +406,7 @@ def update_product(request, product_id):
     return render(request, 'admin/product_details.html', context)
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def delete_product(request,product_id):
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
@@ -389,7 +417,7 @@ def delete_product(request,product_id):
     except Product.DoesNotExist:
         return HttpResponse("Product not found", status=404)
     
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_veriants(request,product_id):
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
@@ -429,3 +457,40 @@ def add_veriants(request,product_id):
     return render(request, 'admin/add_verients.html',context)
     
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def edit_varient(request,product_variant_id):
+    if not request.user.is_authenticated:
+        return redirect('adminlog:admin_login')
+    print("helloooo")
+    print(product_variant_id)
+    product_variant=get_object_or_404(Product_Variant, id=product_variant_id)
+    
+    context={
+        'product_variant':product_variant,
+    }
+    if request.method=='POST':
+        stock=request.POST.get('stock')
+        product_variant.stock=stock
+        product_variant.save()
+
+        # return redirect('product_details:update_product')
+        return redirect('product_details:update_product', product_id=product_variant.product.id)
+
+
+    return render(request,'admin/edit_variant.html',context)
+
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def delete_variant(request,product_variant_id):
+    if not request.user.is_authenticated:
+        return redirect('adminlog:admin_login')
+    try:
+        product_variant = Product_Variant.objects.get(id=product_variant_id)
+        product_variant.delete()
+        return redirect('product_details:update_product', product_id=product_variant.product.id)
+    except Product.DoesNotExist:
+        return HttpResponse("Product not found", status=404)
+    
+
+     
