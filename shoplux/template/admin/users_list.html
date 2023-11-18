@@ -41,7 +41,7 @@
                             <td>{{user.username}}</td>
                             <td>{{user.email}}</td>
                             <td>
-                                <form method="post" action="{% url 'adminlog:block_unblock_user' user.id %}" style="display: inline;">
+                                <form id="blockUserForm_{{ user.id }}" method="post" action="{% url 'adminlog:block_unblock_user' user.id %}" style="display: inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-sm {% if not user.is_active %}btn-danger{% else %}btn-success{% endif %}">
                                         {% if not user.is_active %}Unblock{% else %}Block{% endif %}

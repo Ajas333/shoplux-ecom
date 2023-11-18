@@ -25,22 +25,26 @@
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
-                        <div class="row">
-                            
+                        
+                            <div class="row">
               
-                            {% for attribute_name, attribute_values in attribute_dict.items %}
-                            <div class="col-3">
-                              <label class="form-label">{{attribute_name}}</label>
-                              <select name="atributes_{{ forloop.counter }}" class="form-control ">
-                                  <option value="None">----------</option>
-                                  {% for value in attribute_values %}
-                                  <option value="{{ value.id }}">{{ value.atribute_value }}</option>
-                                      
-                                  {% endfor %}
-                              </select>
-                            </div>
-                            {% endfor %}
-                          </div>
+                                {% for attribute_name, attribute_values in attribute_dict.items %}
+                                <div class="col-3">
+                                  <label class="form-label">{{attribute_name}}</label>
+                                  <select name="atributes_{{ forloop.counter }}" class="form-control ">
+                                      {% for value in attribute_values %}
+                                      {% if value.id == product_variant.attributes.all.0.id %}
+                                            <!-- Preselect the attribute value associated with the product variant -->
+                                            <option value="{{ value.id }}" selected>{{ value.atribute_value }}</option>
+                                        {% else %}
+                                            <option value="{{ value.id }}">{{ value.atribute_value }}</option>
+                                        {% endif %}
+                                      {% endfor %}
+                                  </select>
+                                </div>
+                                {% endfor %}
+                              </div>
+                          
                         <div class="row">
                             <div class="col-lg-4">
                             

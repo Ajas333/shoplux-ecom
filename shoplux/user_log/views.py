@@ -68,10 +68,10 @@ def user_signup(request):
         
         if  Account.objects.filter(email=email).exists():
             messages.error(request, "Email Adress already existing")
-            return redirect('user_signup')
+            return redirect('log:user_signup')
         if password != confirm_password:
             messages.error(request, "Passwords do not match")
-            return redirect('user_signup')
+            return redirect('log:user_signup')
         user=Account.objects.create_user(email=email, password=password,username=user)
         user.save()
         request.session['email']=email

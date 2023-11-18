@@ -9,7 +9,7 @@ from django.views.decorators.cache import cache_control
 # Create your views here.
 
 def admin_login(request):
-    if request.user.is_authenticated and request.user.is_superuser:
+    if  request.user.is_superuser:
         return redirect('admin_dashboard:dashboard')
 
     if request.method == "POST":

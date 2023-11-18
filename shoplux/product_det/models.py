@@ -106,6 +106,6 @@ class Product_Variant(models.Model):
                 self.product_variant_slug = base_slug
             super(Product_Variant, self).save(*args, **kwargs)  
 
- 
-        
+
+    
         

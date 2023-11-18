@@ -464,14 +464,29 @@ def edit_varient(request,product_variant_id):
     print("helloooo")
     print(product_variant_id)
     product_variant=get_object_or_404(Product_Variant, id=product_variant_id)
+    attributes = Atribute.objects.prefetch_related('atribute_value_set').filter(is_active=True)
+
+    attribute_dict = {}
+    for attribute in attributes:
+        attribute_values = attribute.atribute_value_set.filter(is_active=True)
+        attribute_dict[attribute.atribute_name] = attribute_values
+    #to show how many atribute in fronend
+    attribute_values_count = attributes.count() 
     
     context={
         'product_variant':product_variant,
+        'attribute_dict': attribute_dict
     }
     if request.method=='POST':
         stock=request.POST.get('stock')
+        attribute_ids=[]
+        for i in range(1,attribute_values_count+1):
+            req_atri = request.POST.get('atributes_'+str(i))
+            if req_atri != 'None':
+                attribute_ids.append(int(req_atri))
         product_variant.stock=stock
         product_variant.save()
+        product_variant.atributes.set(attribute_ids)
 
         # return redirect('product_details:update_product')
         return redirect('product_details:update_product', product_id=product_variant.product.id)
