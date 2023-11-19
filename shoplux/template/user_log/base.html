@@ -60,7 +60,7 @@
                                 </li>
                                 <li>
                                     {% if request.user.is_authenticated %}
-                                    <p class="text-success">{{ request.user.username }}</p>
+                                   <a href="{% url 'user_area:user_profile' user.id %}"> <p class="text-success">{{ request.user.username }}</p> </a>
                                 </li>
                                 <li>
                                     <a href="{% url 'log:user_logout' %}">Logout</a>
@@ -368,6 +368,11 @@
     <!-- Template  JS -->
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/shop.js' %}"></script>
+
+    <!-- modal -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
    
 </body>

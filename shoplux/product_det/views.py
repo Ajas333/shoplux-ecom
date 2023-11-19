@@ -381,6 +381,15 @@ def update_product(request, product_id):
     except Product.DoesNotExist:
         return HttpResponse("Product not found", status=404)
 
+    try:
+        for products in product_variants:
+            if products.stock == 0:
+                products.is_active = False
+            else:
+                product.is_active = True
+    except:
+        pass
+
     if request.method == 'POST':
         form = CreateProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
@@ -459,11 +468,17 @@ def add_veriants(request,product_id):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def edit_varient(request,product_variant_id):
+    print(product_variant_id)
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
     print("helloooo")
-    print(product_variant_id)
+    
     product_variant=get_object_or_404(Product_Variant, id=product_variant_id)
+    atribute_values = product_variant.atributes.all()
+
+    for atribute_value in atribute_values:
+        print(atribute_value.atribute_value)
+
     attributes = Atribute.objects.prefetch_related('atribute_value_set').filter(is_active=True)
 
     attribute_dict = {}
@@ -480,9 +495,9 @@ def edit_varient(request,product_variant_id):
     if request.method=='POST':
         stock=request.POST.get('stock')
         attribute_ids=[]
-        for i in range(1,attribute_values_count+1):
-            req_atri = request.POST.get('atributes_'+str(i))
-            if req_atri != 'None':
+        for i in range(1, attribute_values_count + 1):
+            req_atri = request.POST.get('atributes_' + str(i))
+            if req_atri is not None and req_atri != 'None':
                 attribute_ids.append(int(req_atri))
         product_variant.stock=stock
         product_variant.save()
