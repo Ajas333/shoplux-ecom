@@ -5,13 +5,10 @@ from collections import defaultdict
 from product_det.models import Product
 from .models import Cart,CartItem
 from django.http import HttpResponse
-
-
-# Create your views here.
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def product_details(request,product_id):
-    
     product = Product.objects.select_related('product_brand').get(id=product_id)
     product_variants=Product_Variant.objects.filter(product_id=product_id)
     attribute_values_dict ={}
@@ -37,8 +34,8 @@ def product_details(request,product_id):
 def cart(request, total=0, quantity=0, cart_item=None):
     try:
         cart=Cart.objects.get(cart_id=_cart_id(request))
-        cart_itms=CartItem.objects.filter(cart=cart,is_active=True)
-        for cart_item in cart_itms:
+        cart_items=CartItem.objects.filter(cart=cart,is_active=True)
+        for cart_item in cart_items:
              total += (cart_item.product.sale_price * cart_item.quantity)
              quantity += cart_item.quantity
         tax = (2 * total)/100
@@ -49,7 +46,7 @@ def cart(request, total=0, quantity=0, cart_item=None):
     context={
          'total':total,
          'quantity':quantity,
-         'cart_items':cart_itms,
+         'cart_items':cart_items,
          'tax':tax,
          'grand_total':grand_total,
     }

@@ -12,7 +12,6 @@ import random
 from django.core.exceptions import ObjectDoesNotExist
 from product_det.models import Product
 
-
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
