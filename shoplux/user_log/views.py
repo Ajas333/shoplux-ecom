@@ -10,15 +10,17 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.core.mail import send_mail
 import random
 from django.core.exceptions import ObjectDoesNotExist
-from product_det.models import Product
+from product_det.models import Product,Product_Variant
 
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
     product=Product.objects.all()
+    Product_Variants=Product_Variant.objects.filter(is_active=True)
     context={
-        'products':product
+        'products':product,
+        'product_variants':Product_Variants
     }
        
     return render(request, 'user_log/index.html',context)

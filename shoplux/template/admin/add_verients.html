@@ -22,7 +22,7 @@
                        
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
               
@@ -45,6 +45,12 @@
                                 <div class="mb-4">
                                     <label for="{{form.sku_id.id_for_label}}" class="form-label">Stock </label>
                                     <input type="text" class="form-control" name="stock"> 
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-upload">
+                                        <label for="variant_image">Image</label>
+                                        <input class="form-control" type="file" required="True" name='thumbnail'>
+                                    </div>
                                 </div>
                             
                             </div>

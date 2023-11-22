@@ -1,34 +1,59 @@
 from django.shortcuts import render,redirect,get_object_or_404
 from django.views.decorators.cache import cache_control
-from product_det.models import Product,Product_Variant
+from product_det.models import Product,Product_Variant,Atribute_Value
 from collections import defaultdict
 from product_det.models import Product
 from .models import Cart,CartItem
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 
-def product_details(request,product_id):
+
+def variant_color(request, product_id, varient_size):
     product = Product.objects.select_related('product_brand').get(id=product_id)
-    product_variants=Product_Variant.objects.filter(product_id=product_id)
-    attribute_values_dict ={}
-    for variant in product_variants:
-            attributes = variant.atributes.all()  # Accessing attributes of the variant
-            for attribute in attributes:
-                attribute_name = attribute.atribute.atribute_name
-                attribute_value = attribute.atribute_value
-                if attribute_name not in attribute_values_dict:
-                    attribute_values_dict[attribute_name] = {attribute_value}
-                else:
-                    attribute_values_dict[attribute_name].add(attribute_value)
+    product_variants = Product_Variant.objects.filter(product_id=product_id, atributes__id=varient_size)
+    color_attribute_values = Atribute_Value.objects.filter(
+        Q(attributes__in=product_variants),
+        atribute__atribute_name='colour'
+    ).distinct()
+    # print(color_attribute_values)
+    # print(product_variants)
+    print(varient_size)
+    desplay_product = product_variants[0]
+    return color_attribute_values
 
-    print(attribute_values_dict)
-    context={
-        'product':product,
-        'attribute_values_dict': attribute_values_dict
+def product_details(request, product_id,size_id):
+    print(size_id)
+    product = Product.objects.select_related('product_brand').get(id=product_id)
+    product_variants = Product_Variant.objects.filter(product_id=product_id)
+    
+
+    size_attribute_values = Atribute_Value.objects.filter(atribute__atribute_name='size').distinct()
+    try:
+        if size_id == 0:
+            varient_size=size_attribute_values.first().id if size_attribute_values.exists() else 0
+        else:
+            varient_size=size_id
+    except ValueError:
+        pass
+    # size_id = size_attribute_values.first().id if size_attribute_values.exists() else 0
+    
+    # Pass the size_id to variant_color function
+    desplay_product = variant_color(request, product_id, varient_size)
+    # print(desplay_product)
+    
+    context = {
+        'product': product,
+        'size_attribute_values': size_attribute_values,
+        'product_variants': product_variants,
+        'desplay_product':desplay_product
     }
     
-    return render(request, 'user_log/product_detail.html',context)
+    return render(request, 'user_log/product_detail.html', context)
+
+
+
 
 
 def cart(request, total=0, quantity=0, cart_item=None):
@@ -78,7 +103,7 @@ def add_cart(request,product_id):
               product=product,
               quantity = 1,
               cart = cart,
-         )
+         ) 
          cart_item.save()
     
     return redirect('user_product:cart')

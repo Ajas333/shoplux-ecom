@@ -97,6 +97,7 @@ class Product_Variant(models.Model):
         updated_at =models.DateTimeField(auto_now=True)
 
         def save(self, *args, **kwargs):
+            
             product_variant_slug_name = f'{self.product.product_brand.brand_name}-{self.product.product_name}-{self.product.product_catg.category_name}'
             base_slug = slugify(product_variant_slug_name)
             counter = Product_Variant.objects.filter(product_variant_slug__startswith=base_slug).count()
@@ -106,6 +107,6 @@ class Product_Variant(models.Model):
                 self.product_variant_slug = base_slug
             super(Product_Variant, self).save(*args, **kwargs)  
 
-
+      
     
         

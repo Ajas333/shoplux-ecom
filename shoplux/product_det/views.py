@@ -321,7 +321,7 @@ def add_product(request):
             product_description=description,
             max_price=max_price,
             sale_price=sale_price,
-            image=request.FILES['image_feild']  # Make sure your file input field is named 'product_image'
+            image=request.FILES['image_feild']  
         )
         product.save()
 
@@ -381,6 +381,8 @@ def update_product(request, product_id):
     except Product.DoesNotExist:
         return HttpResponse("Product not found", status=404)
 
+    for product_variant in product_variants:
+        print(product_variant.product_variant_slug)
     try:
         for products in product_variants:
             if products.stock == 0:
@@ -454,6 +456,7 @@ def add_veriants(request,product_id):
         verient=Product_Variant(
             product=product,
             stock=stock,
+            thumbnail_image=request.FILES['thumbnail']
         )    
         verient.save()
         verient.atributes.set(attribute_ids)

@@ -131,7 +131,9 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
+                                <th>Image</th>
                                 <th>Product Name</th>
+                                <!-- <th>Slug</th> -->
                                 <th>Sku_id</th>
                                 <th>variants</th>
                                 <th>Stock</th>
@@ -143,7 +145,9 @@
                         <tbody>
                             {% for product_variant in product_variants %}
                             <tr>
+                                <th><img src="{{product_variant.thumbnail_image.url}}" class="img-sm img-thumbnail" alt="Item"></th>
                                 <th>{{product.product_name}}</th>
+                                <!-- <th>{{product_variant.product_variant_slug}}</th> -->
                                 <th>{{ product.sku_id }}</th>
                                 <th>
                                     {% for atribute_value in product_variant.atributes.all %}

@@ -235,10 +235,12 @@
                                             
                                                 <div class="row">
                                                     <div class="col-lg-6">
+                                                        {% if address.is_default == False %}
                                                         <form action="{% url 'user_area:set_default_address' address.id %}" method="post">
                                                             {% csrf_token %}
                                                             <button type="submit" class=" btn btn-sm">Set as Default</button>
                                                         </form>
+                                                        {% endif %}
                                                     </div>
                                                     <div class="col-lg-6">
                                                         <button class=" btn btn-sm" href="#" class="btn-small" data-toggle="modal" data-target="#editaddressModal{{ address.id }}">
