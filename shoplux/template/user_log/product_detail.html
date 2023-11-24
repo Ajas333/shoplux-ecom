@@ -2,7 +2,13 @@
 {% load static %}
 {% block title %} Product_details {% endblock %}
 {% block  body %}
-
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 <section class="mt-50 mb-50">
     <div class="container">
         <div class="row flex-row-reverse">
@@ -57,40 +63,29 @@
                                         <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
                                     </ul>
                                 </div>
-                                <!-- {% for attribute_name, attribute_values in attribute_values_dict.items %}
-                                <div class="attr-detail attr-size">
-                                    <strong class="mr-10">{{ attribute_name }}</strong>
-                                    <ul class="list-filter size-filter font-small" id="value_{{attribute_name}}">
-                                        {% for value in attribute_values %}
-                                        <li>
-                                            <input type="radio" class="btn-check" id="{{ attribute_name }}_{{ value }}" autocomplete="off" name="{{ attribute_name }}" value="{{ value }}">
-                                            <label class="btn btn-sm" for="{{ attribute_name }}_{{ value }}">{{ value }}</label><br>
-
-                                        </li>
-                                        {% endfor %}
-                                        
-                                    </ul>
-                                </div>
-                                {% endfor %} -->
-                            <form action="" method="post">
+                            <form  method="post">
+                                {% csrf_token %}
                                 <div class="attr-detail attr-size">
                                     <strong>Size:</strong>
                                     {% for size_attribute_value in size_attribute_values %}
                                         <ul class="" id="value_{{ size_attribute_value.id }}">
                                             <li>
-                                              <a href="{% url 'user_product:product_details' product.id size_attribute_value.id %}" class="ms-3">
+                                              <a href="{% url 'user_product:product_details' product.id size_attribute_value.id %}" class="ms-3 {% if size_attribute_value.id == varient_size %}btn btn-sm{% endif %}">
                                                     {{size_attribute_value.atribute_value}}
-                                                </a> 
+                                                 
+                                                </a>    
                                             </li>
                                         </ul>
                                     {% endfor %}
+                                    {{varient_size}}
+                                   
                                 </div>
                                 <div class="attr-detail attr-size mt-10">
                                     <strong>Color: </strong>
                                     <ul class="list-filter size-filter font-small">
                                         {% for color_value in desplay_product %}
                                             <li >
-                                                <a class="ms-2" href="#" style="background-color: {{ color_value.atribute_value }}">{{ color_value.atribute_value }}</a>
+                                                <a class="ms-2 color-link {% if color_value.id == color_id %}btn btn-sm{% endif %}" href="#" data-id="{{ color_value.id }}">{{ color_value.atribute_value }}</a>
                                             </li>
                                         {% endfor %}
                                     </ul>
@@ -99,7 +94,7 @@
                                     <div class="row mt-30">
                                         <div class="col-lg">
                                             <div class="mb-4">
-                                                <button id="addToCartBtn" type="submit"  class="btn btn-primary btn-sm rounded col-lg-12" href="{% url 'user_product:add_cart' product.id %}" >Add to Cart</button>
+                                                <a id="addToCartBtn" class="btn btn-primary btn-sm rounded col-lg-12" href="{% url 'user_product:add_cart' product.id varient_size %}" >Add to Cart</a>
 
                                             </div>
                                         </div>
@@ -159,14 +154,7 @@
                         <div class="list-group-item mb-10 mt-10">
                             <label class="fw-900">Color</label>
                             <div class="custome-checkbox">
-                                <!-- <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox1" value="">
-                                <label class="form-check-label" for="exampleCheckbox1"><span>Red (56)</span></label>
-                                <br>
-                                <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox2" value="">
-                                <label class="form-check-label" for="exampleCheckbox2"><span>Green (78)</span></label>
-                                <br>
-                                <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox3" value="">
-                                <label class="form-check-label" for="exampleCheckbox3"><span>Blue (54)</span></label> -->
+
                             </div>
                             
                         </div>
@@ -187,6 +175,34 @@
     </div>
 </section>
 
+{% block scripts %}
 
+<script>
+    $(document).ready(function() {
+        $('.color-link').on('click', function(event) {
+            event.preventDefault();
+            
+            var colorId = $(this).data('id');
+            
+            // Send the colorId to the server (views.py) using AJAX
+            $.ajax({
+                type: "POST",
+                url: '{% url 'user_product:color_selection' %}', // Replace with your actual URL endpoint
+                data: {
+                    'color_id': colorId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
+                },
+                success: function(response) {
+                    // Handle the success response from the server if needed
+                },
+                error: function(error) {
+                    // Handle any errors if needed
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
 
 {% endblock %}

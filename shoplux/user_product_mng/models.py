@@ -1,5 +1,6 @@
 from django.db import models
-from product_det.models import Product
+from product_det.models import Product,Product_Variant,Atribute_Value
+from django.shortcuts import get_object_or_404
 
 # Create your models here.
 class Cart(models.Model):
@@ -10,15 +11,18 @@ class Cart(models.Model):
         return self.cart_id
     
 class CartItem(models.Model):
-    product=models.ForeignKey(Product, on_delete=models.CASCADE)
+    product_variant=models.ForeignKey(Product_Variant, on_delete=models.CASCADE)
     cart=models.ForeignKey(Cart, on_delete=models.CASCADE)
     quantity=models.IntegerField()
     is_active=models.BooleanField(default=True)
+    color = models.ForeignKey(Atribute_Value, related_name='cart_color', on_delete=models.SET_NULL, null=True)
+    size = models.ForeignKey(Atribute_Value, related_name='cart_size', on_delete=models.SET_NULL, null=True)
 
     def sub_total(self):
-        return self.product.sale_price * self.quantity
+        return self.product_variant.product.sale_price * self.quantity
+    
 
-    def __str__(self):
-        return self.product
+
+    
 
 
