@@ -9,6 +9,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout as auth_logout
 from user_log.forms import AddressForm
 from user_log.models import Address,Account
+from order_mng.models import Order,OrderProduct
 from django.urls import reverse
 
 
@@ -16,10 +17,12 @@ def user_profile(request,user_id):
     form = AddressForm()
     account = get_object_or_404(Account, id=user_id)
     addresses = Address.objects.filter(account=account)
-   
+    orders=Order.objects.filter(user=request.user)
+    print(orders)
     context={
         'form':form,
-        'addresses':addresses
+        'addresses':addresses,
+        'orders':orders
      
     }
     return render(request,'user_log/profile.html',context)
@@ -131,3 +134,34 @@ def set_default_address(request, address_id):
     except Address.DoesNotExist:
         pass
     return HttpResponseRedirect(reverse('user_area:user_profile', args=[request.user.id]))
+
+
+def order_details(request,order_id, total=0, quantity=0):
+    
+    order=Order.objects.get(id=order_id)
+    order_items=OrderProduct.objects.filter(order=order_id)
+    print(order_items)
+
+    address=order.address
+    
+    grand_total = 0
+    tax = 0
+    for order_item in order_items:
+        product_variant = order_item.product_variant
+        if product_variant:  # Check if the product variant exists
+            subtotal = product_variant.product.sale_price * order_item.quantity
+           
+            total += subtotal
+            quantity += order_item.quantity
+    tax = (2 * total) / 100
+    grand_total = total + tax
+        
+    context={
+        'order':order,
+        'address':address,
+        'order_items':order_items,
+        'tax':tax,
+        'grand_total':grand_total
+       
+    }
+    return render(request,'user_log/order_details.html',context)

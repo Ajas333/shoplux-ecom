@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'admin_dashboard',
     'user_area',
     'product_det',
-    'user_product_mng'
+    'user_product_mng',
+    'order_mng',
 ]
 
 MIDDLEWARE = [

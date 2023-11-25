@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from user_log.models import Account
+from order_mng.models import Order
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
@@ -74,3 +75,13 @@ def block_unblock_user(request,user_id):
         
     user.save()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+def order_list(request):
+    
+    orders=Order.objects.all()
+
+    context={
+        'orders':orders,
+    }
+
+    return render(request,'admin_side/order_details.html',context)

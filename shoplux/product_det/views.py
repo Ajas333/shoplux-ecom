@@ -18,7 +18,7 @@ def category(request):
     content = {
         'categories': categories
     }
-    return render(request, 'admin/product_categories.html',content)
+    return render(request, 'admin_side/product_categories.html',content)
 
 
 
@@ -103,7 +103,7 @@ def edit_category(request,category_id):
 
         return redirect('product_details:category')
 
-    return render(request,'admin/edit_category.html',content)
+    return render(request,'admin_side/edit_category.html',content)
 # ------------------------------------------end categary-----------------------------------------------------------
 
 
@@ -170,7 +170,7 @@ def attribute(request):
     content = {
         'attributes': attributes
     }
-    return render(request, 'admin/add_attribute.html',content)
+    return render(request, 'admin_side/add_attribute.html',content)
 
 
 
@@ -226,7 +226,7 @@ def attribute_value(request):
         'attribute_values': attribute_values,
         'attribute_names': attribute_names
     }
-    return render(request, 'admin/add_attribute_value.html',content)
+    return render(request, 'admin_side/add_attribute_value.html',content)
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -248,7 +248,7 @@ def add_attribute_value(request):
         'attribute_names': attribute_names
     }
     
-    return render(request, 'admin/add_attribute_value.html', context)
+    return render(request, 'admin_side/add_attribute_value.html', context)
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -333,7 +333,7 @@ def add_product(request):
         'brands': brands,   
         'form': form
     }
-    return render(request,'admin/add_product.html', content)
+    return render(request,'admin_side/add_product.html', content)
 
     
 
@@ -351,7 +351,7 @@ def product_list(request):
     context={
        "products":products,
    }
-    return render(request, 'admin/product_list.html',context)
+    return render(request, 'admin_side/product_list.html',context)
 
 
 
@@ -382,7 +382,12 @@ def update_product(request, product_id):
         return HttpResponse("Product not found", status=404)
 
     for product_variant in product_variants:
-        print(product_variant.product_variant_slug)
+        if product_variant.stock == 0:
+            product_variant.is_active = False
+            product_variant.save()
+        else:
+            product_variant.is_active =True
+            product_variant.save()
     try:
         for products in product_variants:
             if products.stock == 0:
@@ -404,7 +409,7 @@ def update_product(request, product_id):
                 'product': product,
                 'product_variants': product_variants,
             }
-            return render(request, 'admin/product_details.html', context)
+            return render(request, 'admin_side/product_details.html', context)
 
     else:
         form = CreateProductForm(instance=product)
@@ -414,7 +419,7 @@ def update_product(request, product_id):
         'product': product,
         'product_variants': product_variants,
     }
-    return render(request, 'admin/product_details.html', context)
+    return render(request, 'admin_side/product_details.html', context)
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -466,7 +471,7 @@ def add_veriants(request,product_id):
         "product":product,
         'attribute_dict':attribute_dict
     }
-    return render(request, 'admin/add_verients.html',context)
+    return render(request, 'admin_side/add_verients.html',context)
     
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -510,7 +515,7 @@ def edit_varient(request,product_variant_id):
         return redirect('product_details:update_product', product_id=product_variant.product.id)
 
 
-    return render(request,'admin/edit_variant.html',context)
+    return render(request,'admin_side/edit_variant.html',context)
 
 
 

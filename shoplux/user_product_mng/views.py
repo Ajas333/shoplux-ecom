@@ -279,6 +279,9 @@ def checkout(request, total=0, quantity=0, cart_item=None):
             print(e)
     else:
         address=addresses.filter(is_default=True).first()
+    request.session['selected_address'] = {
+            'id': address.id,
+        }
     context = {
         'total': total,
         'quantity': quantity,
