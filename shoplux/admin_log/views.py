@@ -23,14 +23,14 @@ def admin_login(request):
                 return redirect('admin_dashboard:dashboard')  # Use the named URL pattern
 
             messages.error(request, "Invalid admin credentials!")
-    return render(request, 'admin/admin_login.html')
+    return render(request, 'admin_side/admin_login.html')
 
 
 
 @login_required(login_url='adminlog:admin_login')  # Use the named URL pattern
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_dashboard(request):
-    return render(request,'admin/admin_index.html')
+    return render(request,'admin_side/admin_index.html')
 
 
 def admin_logout(request):
@@ -55,7 +55,7 @@ def users_list(request):
         'users': users
     }
       
-    return render(request,'admin/users_list.html',context)
+    return render(request,'admin_side/users_list.html',context)
 
 
 @login_required(login_url='adminlog:admin_login')

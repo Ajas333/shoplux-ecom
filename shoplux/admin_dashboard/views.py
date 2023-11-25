@@ -19,4 +19,4 @@ def dashboard(request):
         'category_count':category_count
     }
 
-    return render(request, 'admin/admin_index.html', context)
+    return render(request, 'admin_side/admin_index.html', context)

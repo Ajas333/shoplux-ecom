@@ -1,0 +1,148 @@
+﻿{% extends 'user_log/base.html' %}
+{% load static %}
+{% block title %} Checkout {% endblock %}
+{% block  body %}
+
+
+<section class="mt-50 mb-50">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5">
+                
+                <div class="card text-dark bg-light">
+                    <div class="card-header">
+                        <p>Billing Details</p>
+                    </div>
+                       <div class="card-body">
+                            {% if user %}
+                                <p><strong>Name:</strong> {{ user.username }}</p>
+                                <p><strong>Email:</strong> {{ user.email }}</p>
+                                <p><strong>Phone:</strong> {{ user.phone }}</p>
+                            {% endif %}
+                            <div class="row">
+                                <div class="col-lg-7">
+                                    
+                                {% if not address %}
+                                    <a href="{% url 'user_area:user_profile' user.id %}" class="btn"> Add Address</a>
+                                {% else %}
+                                
+                                 <p><strong>Address:</strong><br>  
+                                    {{ address.house_name }} {{ address.streat_name }}<br>
+                                     {{address.post_office}}, {{ address.place }} <br>
+                                     {{ address.district }}, {{ address.state }}, {{ address.country }}<br>
+                                     pincode: {{ address.pincode }}</p>
+                                     <a href="#changeAddress" data-bs-toggle="collapse" class="collapsed btn btn-sm" aria-expanded="false">Change Address</a></span>
+                                {% endif %}        
+                                       
+                                   
+                                </div>  
+                                <div class="col-lg-5">
+                                </div>
+                            </div>
+                       </div>
+                </div>
+                <!-- panal body -->
+                <div class="panel-collapse collapse login_form" id="changeAddress">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-lg-12 ">
+                                <form action="{% url 'user_product:checkout'  %}" method="post">
+                                    {% csrf_token %}
+                                    {% for address in addresses %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="address_id" id="address_{{ address.id }}" value="{{ address.id }}" checked>
+                                        <label class="form-check-label" for="exampleRadios1">
+                                            <address> {{ address.house_name }}, {{ address.streat_name }}<br> {{address.post_office}}, {{ address.place }} <br>{{ address.district }}, {{ address.state }}, {{ address.country }}<br>pincode: {{ address.pincode }}</address>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                    <button type="submit" class="btn btn-sm">Change</button>
+                                </form>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- panal body end -->
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="order_review">
+                    <div class="mb-20">
+                        <h4>Your Orders</h4>
+                    </div>
+                    <div class="table-responsive order_table text-center">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">Product</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cart_item in cart_items %}
+                                <tr>
+                                    <td class="image product-thumbnail"><img src="{{ cart_item.product_variant.product.image.url }}" alt="#"></td>
+                                    <td>
+                                        <h5><a href="shop-product-full.html">{{ cart_item.product_variant.product.product_slug  }}</a></h5>
+                                            <p>Color: {{ cart_item.color.atribute_value }}</p>
+                                            <p>Size: {{ cart_item.size.atribute_value }}</p>
+                                            <span class="product-qty">x{{ cart_item.quantity }}</span>
+                                    </td>
+                                    <td>${{ cart_item.sub_total }}</td>
+                                </tr>
+                                {% endfor %}
+                                
+                                <tr>
+                                    <th>SubTotal</th>
+                                    <td class="product-subtotal" colspan="2">${{total}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Tax</th>
+                                    <td colspan="2"><em>${{tax}}</em></td>
+                                </tr>
+                                <tr>
+                                    <th>Total</th>
+                                    <td colspan="2" class="product-subtotal"><span class="font-xl text-brand fw-900">${{grand_total}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                    <div class="payment_method">
+                        <div class="mb-25">
+                            <h5>Payment</h5>
+                        </div>
+                        <div class="payment_option">
+                            <div class="custome-radio">
+                                <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios3" checked="">
+                                <label class="form-check-label" for="exampleRadios3" data-bs-toggle="collapse" data-target="#bankTranfer" aria-controls="bankTranfer">Direct Bank Transfer</label>
+                                <div class="form-group collapse in" id="bankTranfer">
+                                    <p class="text-muted mt-5">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration. </p>
+                                </div>
+                            </div>
+                            <div class="custome-radio">
+                                <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios4" checked="">
+                                <label class="form-check-label" for="exampleRadios4" data-bs-toggle="collapse" data-target="#checkPayment" aria-controls="checkPayment">Check Payment</label>
+                                <div class="form-group collapse in" id="checkPayment">
+                                    <p class="text-muted mt-5">Please send your cheque to Store Name, Store Street, Store Town, Store State / County, Store Postcode. </p>
+                                </div>
+                            </div>
+                            <div class="custome-radio">
+                                <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios5" checked="">
+                                <label class="form-check-label" for="exampleRadios5" data-bs-toggle="collapse" data-target="#paypal" aria-controls="paypal">Paypal</label>
+                                <div class="form-group collapse in" id="paypal">
+                                    <p class="text-muted mt-5">Pay via PayPal; you can pay with your credit card if you don't have a PayPal account.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-fill-out btn-block mt-30">Place Order</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

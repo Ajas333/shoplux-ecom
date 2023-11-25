@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect,get_object_or_404
 from django.views.decorators.cache import cache_control
 from product_det.models import Product,Product_Variant,Atribute_Value
+from user_log.models import Address
 from collections import defaultdict
 from django.contrib import messages
 from .models import Cart,CartItem
@@ -8,6 +9,7 @@ from django.http import HttpResponse,HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q,Count
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 
 def handle_color_selection(request):
@@ -65,14 +67,19 @@ def cart(request, total=0, quantity=0, cart_item=None):
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
-        if not cart_items:
-            messages.error(request, "Your cart is empty")
-            return redirect('log:index')
-    except ValueError:
-        pass
+        # if not cart_items:
+        #     messages.error(request, "Your cart is empty")
+        #     return redirect('log:index')
+    except ObjectDoesNotExist:
+        cart_items = []  
+        tax = grand_total = 0
     try:
-        cart = Cart.objects.get(cart_id=_cart_id(request))
-        cart_items = CartItem.objects.filter(cart=cart, is_active=True)
+        if request.user.is_authenticated:
+            cart_items = CartItem.objects.filter(user=request.user, is_active=True)
+        else:
+
+            cart = Cart.objects.get(cart_id=_cart_id(request))
+            cart_items = CartItem.objects.filter(cart=cart, is_active=True)
         
         for cart_item in cart_items:
             # Assuming there's a relationship between CartItem and Product_Variant through product_variant
@@ -107,6 +114,8 @@ def _cart_id(request):
      return cart
 
 
+
+
 def add_cart(request, product_id, varient_size):
     color_id = request.session.get('color_id')
     
@@ -114,16 +123,15 @@ def add_cart(request, product_id, varient_size):
     
     # Fetch the product variant based on color and size
     product_variant = Product_Variant.objects.filter(
-        product=product,
-        atributes__in=[color_id, varient_size],
-    ).annotate(num_attributes=Count('atributes')).filter(num_attributes=2).first()
+                    product=product,
+                    atributes__in=[color_id, varient_size],
+                ).annotate(num_attributes=Count('atributes')).filter(num_attributes=2).first()
 
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
     except Cart.DoesNotExist:
         cart = Cart.objects.create(cart_id=_cart_id(request))
         cart.save()
-
     try:
         # Check if the product variant exists and create/update the cart item
         if product_variant:
@@ -142,22 +150,56 @@ def add_cart(request, product_id, varient_size):
             return HttpResponse("Product variant not found....")
     except CartItem.DoesNotExist:
         # Create a new cart item with the found product variant
-        if product_variant:
-            color_attribute = Atribute_Value.objects.get(id=color_id)
-            size_attribute = Atribute_Value.objects.get(id=varient_size)
-            cart_item = CartItem.objects.create(
-                product_variant=product_variant,
-                quantity=1,
-                cart=cart,
-                color=color_attribute,
-                size=size_attribute,
-            )
-            cart_item.save()
+        if request.user.is_authenticated:
+            existing_cart_item = CartItem.objects.filter(
+                    user=request.user,
+                    product_variant=product_variant
+                ).first()
+            if existing_cart_item:
+                    if existing_cart_item.product_variant.stock > existing_cart_item.quantity:
+                        existing_cart_item.quantity += 1
+                        existing_cart_item.save()
+                    else:
+                        messages.error(request, "Stock limit reached. Cannot add more to cart")
+                        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            else:
+
+                if product_variant:
+                    color_attribute = Atribute_Value.objects.get(id=color_id)
+                    size_attribute = Atribute_Value.objects.get(id=varient_size)
+                    cart_item = CartItem.objects.create(
+                        product_variant=product_variant,
+                        quantity=1,
+                        cart=cart,
+                        color=color_attribute,
+                        size=size_attribute,
+                        user=request.user
+                        
+                    )
+                    cart_item.save()
+                else:
+                # Handle case when product variant with given color and size isn't found
+                    return HttpResponse("Product variant not found.")
+
         else:
-            # Handle case when product variant with given color and size isn't found
-            return HttpResponse("Product variant not found.")
+
+            if product_variant:
+                color_attribute = Atribute_Value.objects.get(id=color_id)
+                size_attribute = Atribute_Value.objects.get(id=varient_size)
+                cart_item = CartItem.objects.create(
+                    product_variant=product_variant,
+                    quantity=1,
+                    cart=cart,
+                    color=color_attribute,
+                    size=size_attribute
+                    
+                )
+                cart_item.save()
+            else:
+                # Handle case when product variant with given color and size isn't found
+                return HttpResponse("Product variant not found.")
     
-    return redirect('user_product:cart')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     
 def increment_cart(request, cart_item_id):
     cart_item=get_object_or_404(CartItem, id=cart_item_id)
@@ -191,3 +233,61 @@ def remove_cart_item(request,cart_item_id):
      
      
 
+@login_required(login_url='log:user_login')
+def checkout(request, total=0, quantity=0, cart_item=None):
+    try:
+        cart = Cart.objects.get(cart_id=_cart_id(request))
+        cart_items = CartItem.objects.filter(cart=cart, is_active=True)
+        # if not cart_items:
+        #     messages.error(request, "Your cart is empty")
+        #     return redirect('log:index')
+    except ObjectDoesNotExist:
+        cart_items = []  
+        tax = grand_total = 0
+    try:
+        if request.user.is_authenticated:
+            cart_items = CartItem.objects.filter(user=request.user, is_active=True)
+        else:
+
+            cart = Cart.objects.get(cart_id=_cart_id(request))
+            cart_items = CartItem.objects.filter(cart=cart, is_active=True)
+
+        print(cart_items)
+        if request.user.is_authenticated:
+            current_user=request.user
+        addresses=Address.objects.filter(account=current_user)
+       
+        for cart_item in cart_items:
+            # Assuming there's a relationship between CartItem and Product_Variant through product_variant
+            product_variant = cart_item.product_variant
+            if product_variant:  # Check if the product variant exists
+                subtotal = product_variant.product.sale_price * cart_item.quantity
+                total += subtotal
+                quantity += cart_item.quantity
+            
+            
+        tax = (2 * total) / 100
+        grand_total = total + tax
+
+    except ObjectDoesNotExist:
+        pass
+    if request.POST.get('address_id'):
+        address_id=request.POST.get('address_id')
+        try:
+            address=Address.objects.get(id=address_id)
+        except Exception as e:
+            print(e)
+    else:
+        address=addresses.filter(is_default=True).first()
+    context = {
+        'total': total,
+        'quantity': quantity,
+        'cart_items': cart_items,
+        'tax': tax,
+        'grand_total': grand_total,
+        'addresses':addresses,
+        'address':address,
+        
+        
+    }
+    return render(request,'user_log/shop_checkout.html',context)

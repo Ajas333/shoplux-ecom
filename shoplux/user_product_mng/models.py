@@ -1,5 +1,6 @@
 from django.db import models
 from product_det.models import Product,Product_Variant,Atribute_Value
+from user_log.models import Account
 from django.shortcuts import get_object_or_404
 
 # Create your models here.
@@ -11,8 +12,9 @@ class Cart(models.Model):
         return self.cart_id
     
 class CartItem(models.Model):
+    user=models.ForeignKey(Account, on_delete=models.CASCADE, null=True)
     product_variant=models.ForeignKey(Product_Variant, on_delete=models.CASCADE)
-    cart=models.ForeignKey(Cart, on_delete=models.CASCADE)
+    cart=models.ForeignKey(Cart, on_delete=models.CASCADE,null=True)
     quantity=models.IntegerField()
     is_active=models.BooleanField(default=True)
     color = models.ForeignKey(Atribute_Value, related_name='cart_color', on_delete=models.SET_NULL, null=True)

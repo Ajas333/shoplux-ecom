@@ -11,6 +11,8 @@ from django.core.mail import send_mail
 import random
 from django.core.exceptions import ObjectDoesNotExist
 from product_det.models import Product,Product_Variant
+from user_product_mng.models import Cart,CartItem
+from user_product_mng.views import _cart_id
 
 # Create your views here.
 
@@ -46,8 +48,37 @@ def user_login(request):
      
 
         if user is not None:
+
+            try:
+                user_cart = Cart.objects.get(cart_id=_cart_id(request))
+            except Cart.DoesNotExist:
+                user_cart = Cart.objects.create(cart_id=_cart_id(request))
+
+            # Get anonymous cart items if they exist
+            try:
+                anonymous_cart_items = CartItem.objects.filter(cart=user_cart)
+            except CartItem.DoesNotExist:
+                anonymous_cart_items = []
+
+            for item in anonymous_cart_items:
+                # Check if the same product variant exists in the user's cart
+                existing_item = CartItem.objects.filter(
+                    user=user,
+                    product_variant=item.product_variant
+                ).first()
+
+                if existing_item:
+                    # Increment quantity if the same product variant exists
+                    existing_item.quantity += item.quantity
+                    existing_item.save()
+                else:
+                    # Otherwise, create a new cart item for the user
+                    item.cart = None
+                    item.user = user
+                    item.save()
+
             login(request, user)
-            # messages.success(request, 'You are logged in successfully')
+            messages.success(request, 'You are logged in successfully')
             return redirect('log:index')
         else:
             messages.error(request, 'Login failed. Please check your email and password.')
