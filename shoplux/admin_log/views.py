@@ -2,10 +2,11 @@ from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from user_log.models import Account
-from order_mng.models import Order
+from order_mng.models import Order,OrderProduct
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
+from order_mng.forms import OrderForm
 
 # Create your views here.
 
@@ -85,3 +86,61 @@ def order_list(request):
     }
 
     return render(request,'admin_side/order_details.html',context)
+
+
+def order_details(request,order_id, total=0, quantity=0):
+    print("wwwwwwwwwwwwwwwwwww,    :",order_id)
+    try:
+        order=Order.objects.get(id=order_id)
+    except Exception as e:
+        print(e)
+    order_items=OrderProduct.objects.filter(order=order)
+
+    address=order.address
+    
+    grand_total = 0
+    tax = 0
+    for order_item in order_items:
+        product_variant = order_item.product_variant
+        if product_variant:  # Check if the product variant exists
+            subtotal = product_variant.product.sale_price * order_item.quantity
+        
+            total += subtotal
+            quantity += order_item.quantity
+    tax = (2 * total) / 100
+    grand_total = total + tax
+    
+    if request.method=="POST":
+        form=OrderForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            return redirect('adminlog:order_details', order_id = order.pk)
+        else:
+            messages.error(request, "choose status")
+            return redirect('adminlog:order_details', order_id = order.pk)
+
+
+    form=OrderForm(instance=order)
+    
+    context={
+        'order':order,
+        'address':address,
+        'order_items':order_items,
+        'tax':tax,
+        'grand_total':grand_total,
+        'total':total,
+        'form':form
+            }
+    return render(request,'admin_side/page_orders_detail.html',context)
+
+
+def cancell_order(request,order_id):
+    print(order_id)
+    try:
+        order=Order.objects.get(id=order_id)
+    except Exception as e:
+        print(e)
+    
+    order.status = 'Cancelled'
+    order.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

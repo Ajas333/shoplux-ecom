@@ -40,7 +40,7 @@ class AccountManager(BaseUserManager):
 
 # Custom user model
 class Account(AbstractBaseUser):
-    username = models.CharField(max_length=50, unique=True)
+    username = models.CharField(max_length=50, unique=False)
     email = models.EmailField(max_length=254, unique=True)
     phone=models.CharField(null=False, blank=False)
     image = models.ImageField(upload_to='static/image_admin/people', blank=True, null=True)

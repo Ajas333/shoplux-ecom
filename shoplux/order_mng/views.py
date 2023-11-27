@@ -4,6 +4,7 @@ from user_product_mng.models import CartItem,Cart
 from user_log.models import Address,Account
 from product_det.models import Product_Variant
 from .models import Order,OrderProduct,Payment
+from django.views.decorators.cache import cache_control
 import datetime
 
 # Create your views here.
@@ -69,11 +70,12 @@ def place_order(request, total=0, quantity=0):
 
     return render(request,'user_log/conform_order.html',context)
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def payment(request, quantity=0, total=0):
+   
     order = Order.objects.get(user=request.user, is_ordered=False)
     cart_items = CartItem.objects.filter(user=request.user)
-
+    
     # Calculate the total and quantity based on cart items
     for cart_item in cart_items:
         product_variant = cart_item.product_variant
@@ -108,6 +110,7 @@ def payment(request, quantity=0, total=0):
         product_variant=Product_Variant.objects.get(id=item.product_variant.id)
         product_variant.stock -= item.quantity
         product_variant.save()
+
     CartItem.objects.filter(user=request.user).delete()
     
     try:

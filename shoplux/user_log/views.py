@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from product_det.models import Product,Product_Variant
 from user_product_mng.models import Cart,CartItem
 from user_product_mng.views import _cart_id
+import re
 
 # Create your views here.
 
@@ -97,7 +98,17 @@ def user_signup(request):
         password = request.POST.get('password1')
         confirm_password = request.POST.get('password2')
         
+        if not validate_name(user):
+             messages.error(request, "Invalid name Format ")
+             return redirect('log:user_signup')
+        if not is_valid_email(email):
+             messages.error(request, "Invalid email Format ")
+             return redirect('log:user_signup')
         
+        if not is_valid_password(password):
+             messages.error(request, "Password should contain atleast 8 characters including atleast one special character, one lowercase letter, one uppercase letter and a number ")
+             return redirect('log:user_signup')
+
         if  Account.objects.filter(email=email).exists():
             messages.error(request, "Email Adress already existing")
             return redirect('log:user_signup')
@@ -201,3 +212,46 @@ def verify_otp_forgot_password(request):
 
 
    
+
+#    validation
+
+def validate_name(name):
+    name = name.strip()
+
+    if not name:
+        return False
+    pattern = r'^[A-Za-z\s]+$'
+
+    # Check if the name matches the pattern
+    if re.match(pattern, name):
+        return True
+    else:
+        return False
+
+def is_valid_email(email):
+
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+    match = re.match(email_pattern, email)
+
+    return bool(match)
+
+
+def is_valid_password(password):
+
+    if len(password) < 8:
+        return False
+
+    if not re.search(r'[A-Z]', password):
+        return False
+
+    if not re.search(r'[a-z]', password):
+        return False
+
+    if not re.search(r'\d', password):
+        return False
+
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False
+
+    return True

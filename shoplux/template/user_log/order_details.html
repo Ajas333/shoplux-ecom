@@ -6,6 +6,104 @@
 <section class="">
     <div class="container">
         <div class="row">
+            <div class="col-lg-4">
+                <div class="row">
+                    <div class="card p-3 ">
+                        <h4 class="card-title text-center">Order Details</h4>
+                        <br>
+                        <table class="table borderless-table">
+                           
+                            <tr>
+                                <th>Order Id</th>
+                                <td>{{order.order_id}}</td>
+                            </tr>
+                            <tr>
+                                <th>Total amount</th>
+                                <td>${{order.order_total}}</td>
+                            </tr>
+                            <tr>
+                                <th>Type of payment</th>
+                                    <td>Cash On Delivary</td>
+                               
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td><span class="badge rounded-pill 
+                                    {% if order.status == 'Conformed'%} bg-primary {% elif order.status == 'Shipped' %} bg-info {% elif order.status == 'Delivered' %}bg-success
+                                    {% elif order.status == 'Cancelled' %} bg-danger {% else %} bg-secondary {% endif %}
+                                    ">{{order.status}}</span></td>
+                            </tr>
+                           
+                        </table>
+                        {% if order.status == 'Delivered' %}
+                            <button type="submit">Return Order</button>
+                        
+                        {% elif order.status == 'Cancelled' %}
+                        <span>Your order with reference {{order.order_id}} is cancelled</span>
+                        
+                        {% else %}
+                        <a class="btn btn-sm cancel-order" href="{% url 'adminlog:cancell_order' order.id %}">Cancel Order</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="card p-3">
+                        <h4 class="card-title text-center">Address</h4>
+                        <br>
+                        <address> {{ address.house_name }}, {{ address.streat_name }}<br> 
+                         {{address.post_office}}, {{ address.place }} <br>
+                         {{ address.district }}, {{ address.state }}, {{ address.country }}<br>
+                         pincode: {{ address.pincode }}</address> 
+                     </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Image</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for order_item in order_items %}
+                            <tr>
+                                <td><img src="{{ order_item.product_variant.thumbnail_image.url }}" alt="{{ order_item.product_variant.product.name }}" width="100"></td>
+                                <td>{{ order_item.product_variant.product_variant_slug }} <br>Size:{{order_item.size}}<br> Color:{{order_item.color}}</td>
+                                <td>${{ order_item.product_price }}</td>
+                                <td>{{ order_item.quantity }}</td>
+                                <td>${{ order_item.sub_total }}</td>
+                            </tr>
+                            {% endfor %}      
+      
+                        <tr class="mt-4">
+                            <td colspan="6">
+                                <article class="float-end">
+                                    <dl class="dlist">
+                                        <dt><h4>Tax:</h4></dt>
+                                        <dd>{{ tax }}</dd>
+
+                                        <dt><h4>Grand total:</h4></dt>
+                                        <dd><b>₹ {{ grand_total }}</b></dd>
+                                    </dl>
+                                </article>
+                            </td>
+                        </tr>
+                      
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
             <div class="col-lg-10 m-auto">
                 <div class="row">
                     <div class="col-md-8">
@@ -15,31 +113,7 @@
                                 <div class="tab-pane fade d-flex justify-content-between show active" id="orders" role="tabpanel" aria-labelledby="orders-tab">
     
                                    <div class="col-lg-6 col-md-12">
-                                    <div class="card p-3 ">
-                                        <h4 class="card-title text-center">Order Details</h4>
-                                        <br>
-                                        <table class="table borderless-table">
-                                           
-                                            <tr>
-                                                <th>Order Id</th>
-                                                <td>{{order.order_id}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Total amount</th>
-                                                <td>${{order.order_total}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Type of payment</th>
-                                                    <td>Cash On Delivary</td>
-                                               
-                                            </tr>
-                                            <tr>
-                                                <th>Status</th>
-                                                <td>{{order.status}}</td>
-                                            </tr>
-                                           
-                                        </table>
-                                    </div>
+                                    
                                 </div>
                                 <div class="col-lg-6">
                                     
@@ -47,17 +121,7 @@
     
     
                                     <div class="col-md-5" >
-                                        <div class="card p-3">
-                                           <h4 class="card-title text-center">Address</h4>
-                                           <br>
-                                           <address> {{ address.house_name }}, {{ address.streat_name }}<br> 
-                                            {{address.post_office}}, {{ address.place }} <br>
-                                            {{ address.district }}, {{ address.state }}, {{ address.country }}<br>
-                                            pincode: {{ address.pincode }}</address>
-                                           
-                                           
-                                            
-                                        </div>
+                                        
                                     </div>
     
     
@@ -68,67 +132,10 @@
                             <div class="row">
     
                             <div class="col-lg-12">
-                                <div class="card">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Image</th>
-                                            <th scope="col">Title</th>
-                                            <th scope="col">Price</th>
-                                            <th scope="col">Quantity</th>
-                                            <th scope="col">Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-    
-                                        {% for order_item in order_items %}
-                                        <tr>
-                                            <td><img src="{{ order_item.product_variant.thumbnail_image.url }}" alt="{{ order_item.product_variant.product.name }}" width="100"></td>
-                                            <td>{{ order_item.product_variant.product_variant_slug }} <br>Size:{{order_item.size}}<br> Color:{{order_item.color}}</td>
-                                            <td>₹{{ order_item.product_price }}</td>
-                                            <td>{{ order_item.quantity }}</td>
-                                            <td>₹{{ order_item.sub_total }}</td>
-                                        </tr>
-                                        {% endfor %}      
-    
-    
-                                             
-                                    <tr class="mt-4">
-                                        <td colspan="6">
-                                            <article class="float-end">
-                                                <dl class="dlist">
-                                                    <dt><h4>Tax:</h4></dt>
-                                                    <dd>{{ tax }}</dd>
-    
-                                                    <dt><h4>Grand total:</h4></dt>
-                                                    <dd><b>₹ {{ grand_total }}</b></dd>
-                                                </dl>
-                                            </article>
-                                        </td>
-                                    </tr>
-                                  
-                                    </tbody>
-                                </table>
-                            </div>
+                            
     
                                
-                                    {% if order.status == 'New' and not order.cancelled %}
-                                        <form action="#" method="post">
-                                            
-                                            {% csrf_token %}
-                                            <input type="submit" value="Cancel Order" class="btn">
-                                        </form>
-    
-                                    {% elif order.status == 'Cancelled' %}
-                                        <input type="submit" value="Item Cancelled" class=" btn-info">
-                                    {% endif %}
-    
-                                    {% if order.status == 'Delivered' %}
-                                         <form action="{% url 'return_order' order.id %}" method="post">
-                                            {% csrf_token %}
-                                            <input type="submit" value="Return Order" class="btn">
-                                        </form>
-                                    {% endif %}
+                                    
                                 
     
     
@@ -146,3 +153,36 @@
 </section>
 
 {% endblock %}
+
+{% block scripts %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cancelOrderLinks = document.querySelectorAll('.cancel-order');
+        cancelOrderLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const orderUrl = this.getAttribute('href');
+                confirmCancelOrder(orderUrl);
+            });
+        });
+    });
+
+    function confirmCancelOrder(orderUrl) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You are about to cancel this order!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, cancel it!'
+        }).then((result) => {   
+            if (result.isConfirmed) {
+                window.location.href = orderUrl; // Redirect to the cancel order URL
+            }
+        });
+    }
+</script>
+
+   {% endblock %}
