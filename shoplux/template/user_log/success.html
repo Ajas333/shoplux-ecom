@@ -7,12 +7,24 @@
     <div class="row mt-30 mb-30">
         <div class="col-lg-3"></div>
         <div class="col-lg-6">
-            <div class="card">
-                <div class="row">
-                    <span class="badge rounded-pill  bg-success">Order placed Successfull</span>
-                   
+            <div class="card text-center mt-60 mb-60">
+                <div class="card-header">
+                  Your Order was successfully completed
                 </div>
-            </div>
+                <div class="card-body">
+                  <h5 class="card-title">Thank you {{request.user.username}} for shopping with us</h5>
+                  <div class="mt-10 mb-10">
+                    <a href="{% url 'log:index' %}" class="btn btn-primary">Continue Shopping</a>
+                    {% if new_order %}
+                    <a href="{% url 'user_area:order_details' new_order.id %}" class="btn btn-primary">View Order Details</a>
+                    {% endif %}
+                  </div>
+                  
+                </div>
+                <div class="card-footer text-muted">
+                  Download Invoice
+                </div>
+              </div>
         </div>
         <div class="col-lg-3"></div>
     </div>

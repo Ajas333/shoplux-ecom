@@ -74,10 +74,10 @@
                                                     <div class="col-lg-4 ">
                                                         {% if user %}
                                                             {% if user.image %}
-                                                                <img class="card-img-top rounded-circle" src="{{ user.image.url }}" alt="User Image">
+                                                                <img class="rounded-circle" src="{{ user.image.url }}" alt="User Image">
                                                             {% else %}
                                                                 <!-- Use default image URL -->
-                                                                <img class="card-img-top rounded-circle" src="{% static 'image_admin/people/default_image.png' %}" alt="Default Image">
+                                                                <img class="rounded-circle" src="{% static 'image_admin/people/default_image.png' %}" alt="Default Image">
                                                             {% endif %}
                                                         {% endif %}
                                                         

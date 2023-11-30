@@ -252,7 +252,7 @@ def checkout(request, total=0, quantity=0, cart_item=None):
             cart = Cart.objects.get(cart_id=_cart_id(request))
             cart_items = CartItem.objects.filter(cart=cart, is_active=True)
 
-        print(cart_items)
+       
         if request.user.is_authenticated:
             current_user=request.user
         addresses=Address.objects.filter(account=current_user)
@@ -273,6 +273,7 @@ def checkout(request, total=0, quantity=0, cart_item=None):
         pass
     if request.POST.get('address_id'):
         address_id=request.POST.get('address_id')
+        print(address_id)
         try:
             address=Address.objects.get(id=address_id)
         except Exception as e:

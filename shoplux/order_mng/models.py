@@ -15,7 +15,15 @@ class Payment(models.Model):
     def __str__(self):
         return self.Payment_id
 
-
+class OrderAddress(models.Model):
+    house_name=models.CharField(max_length=40,null=False, blank=False)
+    streat_name=models.CharField(max_length=50,null=False, blank=False)
+    post_office=models.CharField( max_length=20,null=False, blank=False)
+    place=models.CharField(max_length=25,null=False, blank=False)
+    district=models.CharField(max_length=20, null=False, blank=False)
+    state=models.CharField(max_length=30,null=False,blank=False)
+    country=models.CharField(max_length=35,null=True,blank=True)
+    pincode=models.CharField(max_length=10,null=True, blank=True)
 class Order(models.Model):
     STATUS=(
         ('New','New'),
@@ -28,7 +36,7 @@ class Order(models.Model):
     user=models.ForeignKey(Account, on_delete=models. CASCADE)
     payment=models.ForeignKey(Payment,on_delete=models.SET_NULL, null=True)
     order_id=models.CharField(max_length=100)
-    address=models.ForeignKey(Address, on_delete=models.CASCADE)
+    address=models.ForeignKey(OrderAddress, on_delete=models.CASCADE)
     order_note=models.CharField(max_length=100, blank=True)
     order_total=models.FloatField()
     tax=models.FloatField()
@@ -40,6 +48,8 @@ class Order(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
 
 
 class OrderProduct(models.Model):

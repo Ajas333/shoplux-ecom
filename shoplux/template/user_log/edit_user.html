@@ -42,16 +42,16 @@
                                
                                 {% if user %}
                                     {% if user.image %}
-                                        <img src="{{ user.image.url }}" alt="User Image">
+                                        <img class="rounded-circle" src="{{ user.image.url }}" alt="User Image">
                                     {% else %}
                                         <!-- Use default image URL -->
-                                        <img src="{% static 'image_admin/people/default_image.png' %}" alt="Default Image">
+                                        <img class="rounded-circle" src="{% static 'image_admin/people/default_image.png' %}" alt="Default Image">
                                     {% endif %}
                                 {% endif %}
                             </div>
                             <div class="input-upload">
                                 <label for="user_image">Image</label>
-                                <input class="form-control" type="file" required="True" name="image_feild">
+                                <input class="form-control" type="file"  name="image_feild">
                             </div>
                         </div>
                     </aside> <!-- col.// -->

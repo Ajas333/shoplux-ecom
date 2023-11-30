@@ -111,6 +111,7 @@ def edit_category(request,category_id):
 # ----------------------------------------------Brand-----------------------------------------------------------------
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+
 def brand(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')

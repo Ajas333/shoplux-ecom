@@ -21,6 +21,7 @@ import re
 def index(request):
     product=Product.objects.all()
     Product_Variants=Product_Variant.objects.filter(is_active=True)
+    print(Product_Variants)
     context={
         'products':product,
         'product_variants':Product_Variants

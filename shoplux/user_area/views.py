@@ -9,7 +9,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout as auth_logout
 from user_log.forms import AddressForm
 from user_log.models import Address,Account
-from order_mng.models import Order,OrderProduct
+from order_mng.models import Order,OrderProduct,OrderAddress
 from django.urls import reverse
 
 
@@ -36,8 +36,10 @@ def edit_user(request,user_id):
             accounts.username=request.POST.get('user_name')
             accounts.email=request.POST.get('user_email')
             accounts.phone=request.POST.get('user_phone')
-            accounts.image=request.FILES['image_feild'] 
-
+            try:
+                accounts.image=request.FILES['image_feild'] 
+            except:
+                pass
             accounts.save()
             return redirect('user_area:user_profile',user_id=user_id)
             
@@ -143,6 +145,7 @@ def order_details(request,order_id, total=0, quantity=0):
     print(order_items)
 
     address=order.address
+    print(address)
     
     grand_total = 0
     tax = 0

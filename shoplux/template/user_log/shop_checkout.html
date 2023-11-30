@@ -56,7 +56,8 @@
                                         </label>
                                     </div>
                                     {% endfor %}
-                                    <button type="submit" class="btn btn-sm">Change</button>
+                                    <button type="submit" class="btn btn-sm mb-3">Change</button><br>
+                                    <a href="{% url 'user_area:user_profile' user.id %}" >Add new Address</a>
                                 </form>
                             </div>
                             

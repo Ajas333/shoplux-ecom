@@ -102,7 +102,7 @@ class Product_Variant(models.Model):
             base_slug = slugify(product_variant_slug_name)
             counter = Product_Variant.objects.filter(product_variant_slug__startswith=base_slug).count()
             if counter > 0:
-                self.product_variant_slug = f'{base_slug}-{counter}'
+                self.product_variant_slug = f'{base_slug}'
             else:
                 self.product_variant_slug = base_slug
             super(Product_Variant, self).save(*args, **kwargs)  

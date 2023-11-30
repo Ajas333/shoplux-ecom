@@ -3,9 +3,10 @@ from django.http import HttpResponse,HttpResponseRedirect
 from user_product_mng.models import CartItem,Cart
 from user_log.models import Address,Account
 from product_det.models import Product_Variant
-from .models import Order,OrderProduct,Payment
+from .models import Order,OrderProduct,Payment,OrderAddress
 from django.views.decorators.cache import cache_control
 import datetime
+from django.db.models import Max
 
 # Create your views here.
 
@@ -32,17 +33,34 @@ def place_order(request, total=0, quantity=0):
          selected_address = request.session.get('selected_address')
          if selected_address:
             address_id = selected_address.get('id')
+            print('haiiiiiiiiii')
+            print(address_id)
          address=Address.objects.get(id=address_id)
+         Order_Address=OrderAddress.objects.create(
+             id=address.id,
+             house_name=address.house_name,
+             streat_name=address.streat_name,
+             post_office=address.post_office,
+             place=address.place,
+             district=address.district,
+             state=address.state,
+             country=address.country,
+             pincode=address.pincode
+         )
+         Order_Address.save()
     except Exception as e:
         print(e)
 
+    new_address=OrderAddress.objects.get(id=address_id)
+    
+    print('address before save order ')
     print(address)
-    print(tax)
-    print(grand_total)
-
+    print('address after save order ')
+    print(new_address)
+   
     order = Order.objects.create(
         user=request.user,
-        address=address,
+        address=new_address,
         order_total=grand_total,
         tax=tax,
         ip=request.META.get('REMOTE_ADDR')
@@ -120,4 +138,18 @@ def payment(request, quantity=0, total=0):
         pass
     order.save()
 
-    return render(request, 'user_log/success.html')
+    return redirect('order_mng:success')
+
+def success(request):
+    try:
+        order_id=Order.objects.aggregate(order_id=Max('id'))['order_id']
+        new_order=Order.objects.get(id=order_id)
+    except Exception as e:
+        print(e)
+    
+    
+    context={
+        'new_order':new_order
+    }
+    
+    return render(request,'user_log/success.html',context)
