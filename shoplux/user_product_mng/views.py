@@ -32,12 +32,15 @@ def variant_color(request, product_id, varient_size):
     return color_attribute_values
 
 def product_details(request, product_id,size_id):
-    
+    if not request.user.is_authenticated:
+        return redirect('log:user_login')
     product = Product.objects.select_related('product_brand').get(id=product_id)
     product_variants = Product_Variant.objects.filter(product_id=product_id)
+    print(product_variants)
     
     color_id = request.session.get('color_id')
     size_attribute_values = Atribute_Value.objects.filter(atribute__atribute_name='size').distinct()
+   
     try:
         if size_id == 0:
             varient_size=size_attribute_values.first().id if size_attribute_values.exists() else 0
@@ -64,6 +67,7 @@ def product_details(request, product_id,size_id):
 
 
 def cart(request, total=0, quantity=0, cart_item=None):
+    
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
@@ -132,39 +136,45 @@ def add_cart(request, product_id, varient_size):
     except Cart.DoesNotExist:
         cart = Cart.objects.create(cart_id=_cart_id(request))
         cart.save()
-    try:
-        # Check if the product variant exists and create/update the cart item
-        if product_variant:
-            cart_item = CartItem.objects.get(product_variant=product_variant, cart=cart)
+
+    # Check if the product variant exists
+    if product_variant:
+        # Check if the product variant stock is greater than zero
+        if product_variant.stock > 0:
             try:
+                cart_item = CartItem.objects.get(product_variant=product_variant, cart=cart)
                 if cart_item.product_variant.stock > cart_item.quantity:
                     cart_item.quantity += 1
                     cart_item.save()
                 else:
                     messages.error(request,"Stock limit reached. Cannot add more to cart")
                     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-            except ValueError:
-                pass
-        else:
-            # Handle case when product variant with given color and size isn't found
-            return HttpResponse("Product variant not found....")
-    except CartItem.DoesNotExist:
-        # Create a new cart item with the found product variant
-        if request.user.is_authenticated:
-            existing_cart_item = CartItem.objects.filter(
-                    user=request.user,
-                    product_variant=product_variant
-                ).first()
-            if existing_cart_item:
-                    if existing_cart_item.product_variant.stock > existing_cart_item.quantity:
-                        existing_cart_item.quantity += 1
-                        existing_cart_item.save()
+            except CartItem.DoesNotExist:
+                if request.user.is_authenticated:
+                    existing_cart_item = CartItem.objects.filter(
+                            user=request.user,
+                            product_variant=product_variant
+                        ).first()
+                    if existing_cart_item:
+                        if existing_cart_item.product_variant.stock > existing_cart_item.quantity:
+                            existing_cart_item.quantity += 1
+                            existing_cart_item.save()
+                        else:
+                            messages.error(request, "Stock limit reached. Cannot add more to cart")
+                            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
                     else:
-                        messages.error(request, "Stock limit reached. Cannot add more to cart")
-                        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-            else:
-
-                if product_variant:
+                        color_attribute = Atribute_Value.objects.get(id=color_id)
+                        size_attribute = Atribute_Value.objects.get(id=varient_size)
+                        cart_item = CartItem.objects.create(
+                            product_variant=product_variant,
+                            quantity=1,
+                            cart=cart,
+                            color=color_attribute,
+                            size=size_attribute,
+                            user=request.user
+                        )
+                        cart_item.save()
+                else:
                     color_attribute = Atribute_Value.objects.get(id=color_id)
                     size_attribute = Atribute_Value.objects.get(id=varient_size)
                     cart_item = CartItem.objects.create(
@@ -172,34 +182,18 @@ def add_cart(request, product_id, varient_size):
                         quantity=1,
                         cart=cart,
                         color=color_attribute,
-                        size=size_attribute,
-                        user=request.user
-                        
+                        size=size_attribute
                     )
                     cart_item.save()
-                else:
-                # Handle case when product variant with given color and size isn't found
-                    return HttpResponse("Product variant not found.")
-
         else:
-
-            if product_variant:
-                color_attribute = Atribute_Value.objects.get(id=color_id)
-                size_attribute = Atribute_Value.objects.get(id=varient_size)
-                cart_item = CartItem.objects.create(
-                    product_variant=product_variant,
-                    quantity=1,
-                    cart=cart,
-                    color=color_attribute,
-                    size=size_attribute
-                    
-                )
-                cart_item.save()
-            else:
-                # Handle case when product variant with given color and size isn't found
-                return HttpResponse("Product variant not found.")
+            messages.error(request, "Product out of stock. Cannot add to cart.")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    else:
+        # Handle case when product variant with given color and size isn't found
+        return HttpResponse("Product variant not found.")
     
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
     
 def increment_cart(request, cart_item_id):
     cart_item=get_object_or_404(CartItem, id=cart_item_id)
@@ -235,6 +229,8 @@ def remove_cart_item(request,cart_item_id):
 
 @login_required(login_url='log:user_login')
 def checkout(request, total=0, quantity=0, cart_item=None):
+    if not request.user.is_authenticated:
+        return redirect('log:user_login')
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
@@ -258,12 +254,16 @@ def checkout(request, total=0, quantity=0, cart_item=None):
         addresses=Address.objects.filter(account=current_user)
        
         for cart_item in cart_items:
-            # Assuming there's a relationship between CartItem and Product_Variant through product_variant
+           
             product_variant = cart_item.product_variant
-            if product_variant:  # Check if the product variant exists
-                subtotal = product_variant.product.sale_price * cart_item.quantity
-                total += subtotal
-                quantity += cart_item.quantity
+            if product_variant and product_variant.stock == 0:
+                messages.error(request, f"Sorry, {product_variant.product.product_name} is out of stock.")
+                CartItem.objects.filter(cart=cart, product_variant=product_variant).delete() 
+                return redirect('log:index') 
+
+            subtotal = product_variant.product.sale_price * cart_item.quantity
+            total += subtotal
+            quantity += cart_item.quantity
             
             
         tax = (2 * total) / 100
@@ -273,7 +273,6 @@ def checkout(request, total=0, quantity=0, cart_item=None):
         pass
     if request.POST.get('address_id'):
         address_id=request.POST.get('address_id')
-        print(address_id)
         try:
             address=Address.objects.get(id=address_id)
         except Exception as e:

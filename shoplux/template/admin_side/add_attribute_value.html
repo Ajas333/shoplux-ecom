@@ -7,7 +7,13 @@
         <div>
             <h2 class="content-title card-title">Attribute value </h2>
         </div>
-    
+        <div>
+            {% for message in messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {{message}}
+                    </div>
+                    {% endfor %}
+        </div>
     </div>
     <div class="card">
         <div class="card-body">

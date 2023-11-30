@@ -7,9 +7,12 @@ from .models import Order,OrderProduct,Payment,OrderAddress
 from django.views.decorators.cache import cache_control
 import datetime
 from django.db.models import Max
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def place_order(request, total=0, quantity=0):
 
     current_user=request.user
@@ -20,12 +23,24 @@ def place_order(request, total=0, quantity=0):
     
     grand_total = 0
     tax = 0
+    out_of_stock_items = []
     for cart_item in cart_items:
         product_variant = cart_item.product_variant
-        if product_variant:  # Check if the product variant exists
-            subtotal = product_variant.product.sale_price * cart_item.quantity
-            total += subtotal
-            quantity += cart_item.quantity
+        if product_variant:
+            if product_variant.stock == 0:
+                out_of_stock_items.append(product_variant.product.product_name)
+            else:
+                subtotal = product_variant.product.sale_price * cart_item.quantity
+                total += subtotal
+                quantity += cart_item.quantity
+
+    if out_of_stock_items:
+       
+        for item_name in out_of_stock_items:
+            messages.error(request, f"Sorry, {item_name} is out of stock.")
+        cart_items.filter(product_variant__stock=0).delete()  
+        return redirect('log:index') 
+
     tax = (2 * total) / 100
     grand_total = total + tax
 
@@ -89,19 +104,29 @@ def place_order(request, total=0, quantity=0):
     return render(request,'user_log/conform_order.html',context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url='log:user_login')
 def payment(request, quantity=0, total=0):
    
     order = Order.objects.get(user=request.user, is_ordered=False)
     cart_items = CartItem.objects.filter(user=request.user)
     
-    # Calculate the total and quantity based on cart items
+    
+    out_of_stock_items=[]
     for cart_item in cart_items:
         product_variant = cart_item.product_variant
-        if product_variant:
+        if product_variant and product_variant.stock < cart_item.quantity:
+            out_of_stock_items.append(product_variant.product.product_name)
+        else:
             subtotal = product_variant.product.sale_price * cart_item.quantity
             total += subtotal
             quantity += cart_item.quantity
 
+    if out_of_stock_items:
+       
+        for item_name in out_of_stock_items:
+            messages.error(request, f"Sorry, {item_name} is out of stock.")
+        cart_items.filter(product_variant__stock=0).delete()
+        return redirect('log:index')
     tax = (2 * total) / 100
     grand_total = total + tax
 

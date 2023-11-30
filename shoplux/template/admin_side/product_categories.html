@@ -9,6 +9,13 @@
             <p>Add, edit or delete a category</p>
         </div>
         <div>
+            {% for message in messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {{message}}
+                    </div>
+                    {% endfor %}
+        </div>
+        <div>
             <input type="text" placeholder="Search Categories" class="form-control bg-white">
         </div>
     </div>

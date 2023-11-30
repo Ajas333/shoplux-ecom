@@ -13,6 +13,7 @@ from order_mng.forms import OrderForm
 def admin_login(request):
     if  request.user.is_superuser:
         return redirect('admin_dashboard:dashboard')
+    
 
     if request.method == "POST":
         email = request.POST['email']
@@ -32,9 +33,12 @@ def admin_login(request):
 @login_required(login_url='adminlog:admin_login')  # Use the named URL pattern
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_dashboard(request):
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     return render(request,'admin_side/admin_index.html')
 
 
+@login_required(login_url='adminlog:admin_login')
 def admin_logout(request):
     logout(request)
 
@@ -43,7 +47,7 @@ def admin_logout(request):
 @login_required(login_url='adminlog:admin_login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def users_list(request):
-    if not request.user.is_authenticated:
+    if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
     
     search_query=request.GET.get('query')
@@ -64,7 +68,8 @@ def users_list(request):
 def block_unblock_user(request,user_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
-    
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     user = get_object_or_404(Account, id=user_id)
     
     if user.is_active:
@@ -78,7 +83,8 @@ def block_unblock_user(request,user_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 def order_list(request):
-    
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     orders=Order.objects.all()
 
     context={
@@ -89,7 +95,8 @@ def order_list(request):
 
 
 def order_details(request,order_id, total=0, quantity=0):
-    print("wwwwwwwwwwwwwwwwwww,    :",order_id)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     try:
         order=Order.objects.get(id=order_id)
     except Exception as e:
@@ -135,6 +142,8 @@ def order_details(request,order_id, total=0, quantity=0):
 
 
 def cancell_order(request,order_id):
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     print(order_id)
     try:
         order=Order.objects.get(id=order_id)

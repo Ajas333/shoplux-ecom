@@ -11,6 +11,8 @@ from order_mng.models import Order
 def dashboard(request):
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
 
     product_count=Product.objects.count()
     category_count=Category.objects.count()

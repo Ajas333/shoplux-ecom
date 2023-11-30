@@ -13,12 +13,16 @@ from django.core.exceptions import ObjectDoesNotExist
 from product_det.models import Product,Product_Variant
 from user_product_mng.models import Cart,CartItem
 from user_product_mng.views import _cart_id
+from django.contrib.auth.decorators import login_required
 import re
 
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url='log:user_login')
 def index(request):
+    if not request.user.is_authenticated:
+        return redirect('log:user_login')
     product=Product.objects.all()
     Product_Variants=Product_Variant.objects.filter(is_active=True)
     print(Product_Variants)
@@ -144,7 +148,7 @@ def sent_otp(request):
 
 
 def verify_otp(request):
-   print("hello......................")
+   
    user=Account.objects.get(email=request.session['email'])
    if request.method=="POST":
       if str(request.session['OTP_Key']) != str(request.POST['otp']):

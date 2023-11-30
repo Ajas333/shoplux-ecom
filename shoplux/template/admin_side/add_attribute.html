@@ -8,6 +8,13 @@
             <h2 class="content-title card-title">Attributes </h2>
             <p></p>
         </div>
+        <div>
+            {% for message in messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {{message}}
+                    </div>
+                    {% endfor %}
+        </div>
       
     </div>
     <div class="card">

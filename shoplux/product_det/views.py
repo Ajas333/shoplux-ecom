@@ -3,6 +3,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from product_det.models import Category,Brand,Atribute,Atribute_Value,Product,Product_Variant
 from .forms import CreateProductForm
 from django.views.decorators.cache import cache_control
+from django.contrib import messages
+
 
 # Create your views here.
 
@@ -24,16 +26,27 @@ def category(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_category(request):
-    category_name = request.POST['category_name']
-    parent = None if request.POST['parent'] == 'None' else Category.objects.get(category_name=request.POST['parent'])
-    description = request.POST['description']
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
+    
+    if request.method == "POST":
+        category_name = request.POST['category_name']
+        parent = None if request.POST['parent'] == 'None' else Category.objects.get(category_name=request.POST['parent'])
+        description = request.POST['description']
 
-    Category.objects.create(
-        category_name=category_name,
-        parent=parent,
-        description=description,
+        validate=validate_no_spaces(category_name)
         
-    )
+        if validate:
+            Category.objects.create(
+                category_name=category_name,
+                parent=parent,
+                description=description,
+                
+            )
+        else:
+            messages.error(request,"Provide Categary name without space")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        
     return redirect('product_details:category')
 
 
@@ -42,11 +55,14 @@ def add_category(request):
 def available(request,category_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     
     category = get_object_or_404(Category, id=category_id)
     
     if category.is_available:
         category.is_available=False
+        
        
     else:
         category.is_available=True
@@ -70,6 +86,8 @@ def available(request,category_id):
 def delete_category(request,category_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     try:
         category=Category.objects.get(id=category_id)
     except ValueError:
@@ -83,6 +101,8 @@ def delete_category(request,category_id):
 def edit_category(request,category_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     
     category_list=Category.objects.get(id=category_id)
     category_name=category_list.category_name
@@ -110,7 +130,7 @@ def edit_category(request,category_id):
 
 # ----------------------------------------------Brand-----------------------------------------------------------------
 
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+
 
 def brand(request):
     if not request.user.is_superuser:
@@ -119,13 +139,21 @@ def brand(request):
     content = {
         'brands': brands
     }
-    return render(request, 'admin/add_brand.html',content)
+    return render(request, 'admin_side/add_brand.html',content)
 
 def add_brand(request):
-    brand_name = request.POST['brand_name']
-    Brand.objects.create(
+    if request.method == "POST":
+         brand_name = request.POST['brand_name']
+    validate=validate_no_spaces(brand_name)
+    
+    if validate:
+        Brand.objects.create(
         brand_name=brand_name,
-    )
+        )
+    else:
+        messages.error(request,"Provide Brand name name without space")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    
     return redirect('product_details:brand')
     
 
@@ -133,6 +161,8 @@ def add_brand(request):
 def brand_available(request,brand_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     
     brand = get_object_or_404(Brand, id=brand_id)
     
@@ -149,6 +179,8 @@ def brand_available(request,brand_id):
 def delete_brand(request,brand_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     try:
         brand=Brand.objects.get(id=brand_id)
     except ValueError:
@@ -177,10 +209,21 @@ def attribute(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_attribute(request):
-    attribute_name = request.POST['attribute_name']
-    Atribute.objects.create(
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
+    if request.method == "POST":
+        attribute_name = request.POST['attribute_name']
+
+    validate=validate_no_spaces(attribute_name)
+    
+    if validate:
+        Atribute.objects.create(
         atribute_name=attribute_name,
-    )
+        )
+    else:
+        messages.error(request,"Provide Attribute  name without space")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    
     return redirect('product_details:attribute')
 
 
@@ -189,7 +232,8 @@ def add_attribute(request):
 def attribute_available(request,attribute_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
-   
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     attribute = Atribute.objects.get(id=attribute_id)
     
     if attribute.is_active:
@@ -205,6 +249,8 @@ def attribute_available(request,attribute_id):
 def delete_attribute(request,attribute_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     try:
         attribute=Atribute.objects.get(id=attribute_id)
     except ValueError:
@@ -232,8 +278,14 @@ def attribute_value(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_attribute_value(request):
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     if request.method == 'POST':
         attribute_value_n = request.POST.get('attribute_value_name')
+
+    validate=validate_no_spaces(attribute_value_n)
+
+    if validate:
         attribute = request.POST.get('attribute')
         if attribute_value_n and attribute:
             attribute_id = Atribute.objects.get(atribute_name=attribute)
@@ -241,6 +293,9 @@ def add_attribute_value(request):
                 atribute_value=attribute_value_n,
                 atribute_id=attribute_id.id
             )
+    else:
+        messages.error(request,"Provide Attribute  name without space")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     
     attribute_values = Atribute_Value.objects.all()
     attribute_names = Atribute.objects.all()
@@ -256,6 +311,8 @@ def add_attribute_value(request):
 def attribute_value_available(request,attribute_value_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
    
     attribute_value = Atribute_Value.objects.get(id=attribute_value_id)
     
@@ -271,6 +328,8 @@ def attribute_value_available(request,attribute_value_id):
 def delete_attribute_value(request,attribute_value_id):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     try:
         attribute_value=Atribute_Value.objects.get(id=attribute_value_id)
     except ValueError:
@@ -296,6 +355,8 @@ def delete_attribute_value(request,attribute_value_id):
 def add_product(request):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     categories = Category.objects.all()
     brands = Brand.objects.all().exclude(is_active=False)
     
@@ -309,24 +370,43 @@ def add_product(request):
         category_name= request.POST.get('product_category')
         brand_name=request.POST.get('product_brand')
 
-       
+        validate=validate_no_spaces(product_name)
+        if validate:
+           validate_max_price=validate_numeric(max_price)
+           if validate_max_price:
+                validate_sale_price=validate_numeric(sale_price)
+                if  validate_sale_price:
+                    if sale_price > max_price:
+                        messages.error(request,"sale price is greater than max price pleas provide correct value")
+                        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+                    else:
+                        category = get_object_or_404(Category, category_name=category_name)
+                        brand = get_object_or_404(Brand, brand_name=brand_name)
 
-        category = get_object_or_404(Category, category_name=category_name)
-        brand = get_object_or_404(Brand, brand_name=brand_name)
+                        product = Product(
+                            product_name=product_name,
+                            sku_id=product_sk_id,
+                            product_catg=category,
+                            product_brand=brand,
+                            product_description=description,
+                            max_price=max_price,
+                            sale_price=sale_price,
+                            image=request.FILES['image_feild']  
+                        )
+                        product.save()
 
-        product = Product(
-            product_name=product_name,
-            sku_id=product_sk_id,
-            product_catg=category,
-            product_brand=brand,
-            product_description=description,
-            max_price=max_price,
-            sale_price=sale_price,
-            image=request.FILES['image_feild']  
-        )
-        product.save()
+                        return redirect('product_details:product_list')
+                else:
+                    messages.error(request,"provide correct value contain only number")
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+           else:
+                messages.error(request,"provide correct value contain only number")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/')) 
+        
+        else:
+            messages.error(request,"Provide Product name without space")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-        return redirect('product_details:product_list')
     else:
         form=CreateProductForm()
     content = {
@@ -347,7 +427,8 @@ def add_product(request):
 #-------------------------------------------------------product list----------------------------------------------
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def product_list(request):
-
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     products=Product.objects.all()
     context={
        "products":products,
@@ -372,7 +453,9 @@ from django.shortcuts import render, redirect
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def update_product(request, product_id):
-    print(product_id)
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
+   
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
 
@@ -427,6 +510,8 @@ def update_product(request, product_id):
 def delete_product(request,product_id):
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     try:
         product = Product.objects.get(id=product_id)
         product.delete()
@@ -437,6 +522,8 @@ def delete_product(request,product_id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_veriants(request,product_id):
     if not request.user.is_authenticated:
+        return redirect('adminlog:admin_login')
+    if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
     try:
         product = Product.objects.get(id=product_id)
@@ -480,7 +567,9 @@ def edit_varient(request,product_variant_id):
     print(product_variant_id)
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
-    print("helloooo")
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
+   
     
     product_variant=get_object_or_404(Product_Variant, id=product_variant_id)
     atribute_values = product_variant.atributes.all()
@@ -524,6 +613,8 @@ def edit_varient(request,product_variant_id):
 def delete_variant(request,product_variant_id):
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
+    if not request.user.is_superuser:
+        return redirect('adminlog:admin_login')
     try:
         product_variant = Product_Variant.objects.get(id=product_variant_id)
         product_variant.delete()
@@ -532,4 +623,18 @@ def delete_variant(request,product_variant_id):
         return HttpResponse("Product not found", status=404)
     
 
-     
+
+
+# validation
+
+def validate_no_spaces(value):
+   
+    if value.strip() != value:
+        
+        return False
+    return True
+
+def validate_numeric(value):
+    if value.isdigit():
+        return True
+    return False

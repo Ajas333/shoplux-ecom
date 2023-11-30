@@ -9,6 +9,13 @@
             <h2 class="content-title card-title">Brands</h2>
             <p>Add or delete a brand</p>
         </div>
+        <div>
+            {% for message in messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {{message}}
+                    </div>
+                    {% endfor %}
+        </div>
     </div>
     <div class="card">
         <div class="card-body">

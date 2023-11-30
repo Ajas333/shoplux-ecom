@@ -11,9 +11,13 @@ from user_log.forms import AddressForm
 from user_log.models import Address,Account
 from order_mng.models import Order,OrderProduct,OrderAddress
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 
 
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_profile(request,user_id):
+    
     form = AddressForm()
     account = get_object_or_404(Account, id=user_id)
     addresses = Address.objects.filter(account=account)
@@ -27,7 +31,8 @@ def user_profile(request,user_id):
     }
     return render(request,'user_log/profile.html',context)
 
-
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def edit_user(request,user_id): 
 
     accounts=Account.objects.get(id=user_id)
@@ -55,7 +60,8 @@ def edit_user(request,user_id):
 
 
 
-@login_required
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def change_password(request,user_id):
 
     user=Account.objects.get(id=user_id)
@@ -86,11 +92,16 @@ def change_password(request,user_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
     auth_logout(request)
     return redirect('log:index') 
 
 
+
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_address(request,user_id):
 
     account = get_object_or_404(Account, id=user_id)
@@ -110,6 +121,9 @@ def add_address(request,user_id):
     return render(request, 'user_log/profile.html', {'form': form})
 
 
+
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def edit_address(request, address_id):
    
     address = Address.objects.get(id=address_id)
@@ -137,7 +151,8 @@ def set_default_address(request, address_id):
         pass
     return HttpResponseRedirect(reverse('user_area:user_profile', args=[request.user.id]))
 
-
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def order_details(request,order_id, total=0, quantity=0):
     
     order=Order.objects.get(id=order_id)
