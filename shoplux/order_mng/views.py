@@ -162,12 +162,12 @@ def payment(request, quantity=0, total=0):
     except ValueError:
         pass
     order.save()
-
+    request.session['order_id']=order.id
     return redirect('order_mng:success')
 
 def success(request):
     try:
-        order_id=Order.objects.aggregate(order_id=Max('id'))['order_id']
+        order_id=request.session.get('order_id')
         new_order=Order.objects.get(id=order_id)
     except Exception as e:
         print(e)
@@ -178,3 +178,23 @@ def success(request):
     }
     
     return render(request,'user_log/success.html',context)
+
+def invoice(request,order_id,total=0):
+    try:
+        order=Order.objects.get(id=order_id)
+        orders=OrderProduct.objects.filter(order=order)
+    except:
+        pass
+    grand_total=0
+    for item in orders:
+        item.subtotal=item.quantity * item.product_price
+        total += item.subtotal
+    tax=order.tax
+    grand_total = tax + total
+    context={
+        'order':order,
+        'orders':orders,
+        'grand_total':grand_total,
+        'tax':tax,
+    }
+    return render(request,'user_log/bill.html',context) 

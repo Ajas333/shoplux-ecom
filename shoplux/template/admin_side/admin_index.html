@@ -61,51 +61,58 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-4">
+        <div class="row">
             <div class="dashboard-menu">
                 
-                    <ul class="nav flex-column" role="tablist">
-                        <li class="nav-item ">
-                            <a class="nav-link active" id="daily_report-tab" data-bs-toggle="tab" href="#daily_report" role="tab" aria-controls="daily_report" aria-selected="false"><i class="fi-rs-settings-sliders mr-10"></i>Daily Report</a>
-                        </li>
-                        <li class="nav-item ">
-                            <a class="nav-link" id="monthly_report-tab" data-bs-toggle="tab" href="#monthly_report" role="tab" aria-controls="monthly_report" aria-selected="false"><i class="fi-rs-shopping-bag mr-10"></i>Monthely Report</a>
-                        </li>
-                        <li class="nav-item ">
-                            <a class="nav-link" id="yearly_report-tab" data-bs-toggle="tab" href="#yearly_report" role="tab" aria-controls="yearly_report" aria-selected="false"><i class="fi-rs-shopping-cart-check mr-10"></i>Yearly Report</a>
-                        </li>
-                    </ul>
+                <div class="row">
+                    <div class="col-md-12">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link active" id="daily_report-tab" data-bs-toggle="tab" href="#daily_report" role="tab" aria-controls="daily_report" aria-selected="true"><i class="fi-rs-settings-sliders mr-2"></i>Daily Report</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="monthly_report-tab" data-bs-toggle="tab" href="#monthly_report" role="tab" aria-controls="monthly_report" aria-selected="false"><i class="fi-rs-shopping-bag mr-2"></i>Monthly Report</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="yearly_report-tab" data-bs-toggle="tab" href="#yearly_report" role="tab" aria-controls="yearly_report" aria-selected="false"><i class="fi-rs-shopping-cart-check mr-2"></i>Yearly Report</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 
             </div>
         </div>
-        <div class="col-md-8">
-            <div class="tab-content dashboard-content">
-                <div class="tab-pane fade active show" id="daily_report" role="tabpanel" aria-labelledby="daily_report-tab">
-                    <div class="card mb-4">
-                        <article class="card-body">
-                            <h5 class="card-title">Daily Sale Report</h5>
-                            <canvas id="myChart"></canvas>
-                        </article>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="tab-content dashboard-content">
+                    <div class="tab-pane fade active show" id="daily_report" role="tabpanel" aria-labelledby="daily_report-tab">
+                        <div class="card mb-4">
+                            <article class="card-body">
+                                <h5 class="card-title">Daily Sale Report</h5>
+                                <canvas id="myChart"></canvas>
+                            </article>
+                        </div>
                     </div>
-                </div>
-                <div class="tab-pane fade" id="monthly_report" role="tabpanel" aria-labelledby="monthly_report-tab">
-                    <div class="card mb-4">
-                        <article class="card-body">
-                            <h5 class="card-title">Monthly Sale Report</h5>
-                            <canvas id="monthlyChart"></canvas>
-                        </article>
+                    <div class="tab-pane fade" id="monthly_report" role="tabpanel" aria-labelledby="monthly_report-tab">
+                        <div class="card mb-4">
+                            <article class="card-body">
+                                <h5 class="card-title">Monthly Sale Report</h5>
+                                <canvas id="monthlyChart"></canvas>
+                            </article>
+                        </div>
                     </div>
-                </div>
-                <div class="tab-pane fade" id="yearly_report" role="tabpanel" aria-labelledby="yearly_report-tab">
-                    <div class="card mb-4">
-                        <article class="card-body">
-                            <h5 class="card-title">Yearly Sale Report</h5>
-                            <canvas id="yearlyChart"></canvas>
-                        </article>
+                    <div class="tab-pane fade" id="yearly_report" role="tabpanel" aria-labelledby="yearly_report-tab">
+                        <div class="card mb-4">
+                            <article class="card-body">
+                                <h5 class="card-title">Yearly Sale Report</h5>
+                                <canvas id="yearlyChart"></canvas>
+                            </article>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        
     </div>
     <div class="card mb-4">
         <header class="card-header">

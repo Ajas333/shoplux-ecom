@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from order_mng.forms import OrderForm
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -56,9 +57,12 @@ def users_list(request):
          users = Account.objects.filter(username__icontains=search_query)
     else:
          users = Account.objects.all()
-         print("the users are :", users)
+    paginator=Paginator(users,5)
+    page_number=request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     context = {
-        'users': users
+        'users': users,
+        'page_obj':page_obj
     }
       
     return render(request,'admin_side/users_list.html',context)

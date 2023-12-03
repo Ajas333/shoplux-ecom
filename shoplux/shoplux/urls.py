@@ -10,5 +10,6 @@ urlpatterns = [
     path('user_product/',include('user_product_mng.urls')),
     path('admin_dashboard/',include('admin_dashboard.urls')),
     path('order_mng/',include('order_mng.urls')),
+    path('coupon/',include('Coupon_Mng.urls')),
 
 ]
