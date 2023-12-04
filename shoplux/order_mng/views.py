@@ -44,7 +44,13 @@ def place_order(request, total=0, quantity=0):
             if product_variant.stock == 0:
                 out_of_stock_items.append(product_variant.product.product_name)
             else:
-                subtotal = product_variant.product.sale_price * cart_item.quantity
+                try:  
+                   if product_variant.product.product_offer is not None and product_variant.product.product_offer > 0:
+                      subtotal = product_variant.product.product_offer * cart_item.quantity
+                   else:
+                      subtotal = product_variant.product.sale_price * cart_item.quantity
+                except:
+                      subtotal = product_variant.product.sale_price * cart_item.quantity
                 total += subtotal
                 quantity += cart_item.quantity
 

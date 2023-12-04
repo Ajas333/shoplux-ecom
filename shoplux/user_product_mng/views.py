@@ -106,8 +106,15 @@ def cart(request, total=0, quantity=0, cart_item=None):
         for cart_item in cart_items:
             
             product_variant = cart_item.product_variant
-            if product_variant:  
-                subtotal = product_variant.product.sale_price * cart_item.quantity
+            if product_variant:
+                try:  
+                   if product_variant.product.product_offer is not None and product_variant.product.product_offer > 0:
+                      subtotal = product_variant.product.product_offer * cart_item.quantity
+                   else:
+                       subtotal = product_variant.product.sale_price * cart_item.quantity
+                except:
+                     subtotal = product_variant.product.sale_price * cart_item.quantity
+                
                 total += subtotal
                 quantity += cart_item.quantity
 
@@ -282,8 +289,14 @@ def checkout(request, total=0, quantity=0, cart_item=None):
                 messages.error(request, f"Sorry, {product_variant.product.product_name} is out of stock.")
                 CartItem.objects.filter(cart=cart, product_variant=product_variant).delete() 
                 return redirect('log:index') 
-
-            subtotal = product_variant.product.sale_price * cart_item.quantity
+            try:  
+                if product_variant.product.product_offer is not None and product_variant.product.product_offer > 0:
+                   subtotal = product_variant.product.product_offer * cart_item.quantity
+                else:
+                   subtotal = product_variant.product.sale_price * cart_item.quantity
+            except:
+                   subtotal = product_variant.product.sale_price * cart_item.quantity
+                
             total += subtotal
             quantity += cart_item.quantity
             

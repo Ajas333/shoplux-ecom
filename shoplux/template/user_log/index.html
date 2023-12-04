@@ -84,26 +84,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="banner-img wow fadeIn animated">
-                    <img src="static/image/banner/banner-2.png" alt="">
-                    <div class="banner-text">
-                        <span>Sale off</span>
-                        <h4>Great Summer <br>Collection</h4>
-                        <a href="shop-grid-right.html">Shop Now <i class="fi-rs-arrow-right"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 d-md-none d-lg-flex">
-                <div class="banner-img wow fadeIn animated  mb-sm-0">
-                    <img src="static/image/banner/banner-3.png" alt="">
-                    <div class="banner-text">
-                        <span>New Arrivals</span>
-                        <h4>Shop Today’s <br>Deals & Offers</h4>
-                        <a href="shop-grid-right.html">Shop Now <i class="fi-rs-arrow-right"></i></a>
-                    </div>
-                </div>
-            </div>
+            
+            
         </div>
     </div>
 </section>
@@ -149,8 +131,12 @@
                                     </span>
                                 </div>
                                 <div class="product-price">
-                                    <span>${{product.sale_price}}</span>
+                                    {% if product.product_offer is not None and product.product_offer > 0 %}
+                                    <span>${{product.product_offer}}</span>
                                     <span class="old-price">${{product.max_price}}</span>
+                                    {% else %}
+                                    <span>${{product.sale_price}}</span>
+                                    {% endif %}
                                 </div>
                               
                             </div>
@@ -163,7 +149,7 @@
                    
                     
                 </div>
-                <--End product-grid-4-->
+              
             </div>
             <!--En tab one (Featured)-->
         </div>

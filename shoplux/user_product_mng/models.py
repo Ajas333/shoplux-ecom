@@ -24,7 +24,10 @@ class CartItem(models.Model):
     size = models.ForeignKey(Atribute_Value, related_name='cart_size', on_delete=models.SET_NULL, null=True)
 
     def sub_total(self):
-        return self.product_variant.product.sale_price * self.quantity
+        if self.product_variant.product.product_offer is not None and self.product_variant.product.product_offer > 0:
+            return self.product_variant.product.product_offer * self.quantity
+        else:  
+            return self.product_variant.product.sale_price * self.quantity
     
 
 

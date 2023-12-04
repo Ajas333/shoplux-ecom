@@ -4,6 +4,8 @@ from django.db.models import UniqueConstraint, Q,F,Avg,Count
 from collections import defaultdict
 from django.urls import reverse
 from datetime import datetime
+
+
     # Create your models here.
 
 
@@ -67,8 +69,10 @@ class Product(models.Model):
         is_active = models.BooleanField(default=True)
         created_at =models.DateTimeField(auto_now_add=True)
         updated_at =models.DateTimeField(auto_now=True)
-        
+        product_offer=models.DecimalField(max_digits=8,decimal_places=2, default= 0, null=True, blank=True)
+        offer_expairy=models.DateTimeField(blank=True , null=True) 
 
+    
         def save(self, *args, **kwargs):
             product_slug_name = f'{self.product_brand.brand_name} {self.product_name} {self.sku_id} {self.product_catg.category_name}'
             base_slug = slugify(product_slug_name)

@@ -11,6 +11,7 @@ from django.core.mail import send_mail
 import random
 from django.core.exceptions import ObjectDoesNotExist
 from product_det.models import Product,Product_Variant
+from Offer_mng.models import ProductOffer
 from user_product_mng.models import Cart,CartItem
 from user_product_mng.views import _cart_id
 from django.contrib.auth.decorators import login_required
@@ -25,7 +26,20 @@ def index(request):
         return redirect('log:user_login')
     product=Product.objects.all()
     Product_Variants=Product_Variant.objects.filter(is_active=True)
-    print(Product_Variants)
+    for p in product:
+       try:
+           product_offer=ProductOffer.objects.get(product=p)
+           if product_offer.is_active:
+               print("haiiiiiiiiiiii")
+           else:
+               print("hellllllloooooo")
+               p.product_offer = 0
+               p.save()
+           
+       except:
+           pass
+    for p in product:
+        print(p.sale_price)
     context={
         'products':product,
         'product_variants':Product_Variants
