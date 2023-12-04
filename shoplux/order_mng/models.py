@@ -1,6 +1,7 @@
 from django.db import models
 from user_log.models import Account,Address
 from product_det.models import Product_Variant
+from Coupon_Mng.models import Coupon
 
 # Create your models here.
 
@@ -45,6 +46,7 @@ class Order(models.Model):
     is_ordered=models.BooleanField(default=False)
     created_at=models.DateField(auto_now_add=True)
     updated_at=models.DateField(auto_now=True)
+    coupen=models.ForeignKey(Coupon, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.user.username

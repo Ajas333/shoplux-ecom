@@ -102,6 +102,12 @@
                                     <th>Tax</th>
                                     <td colspan="2"><em>${{tax}}</em></td>
                                 </tr>
+                                {% if descount %}
+                                <tr>
+                                  <th>Coupen Descount</th>
+                                  <td class="cart_total_amount" colspan="2"> <i class="ti-gift mr-5"></i> ${{descount}}</td>
+                                </tr>
+                              {% endif %}
                                 <tr>
                                     <th>Total</th>
                                     <td colspan="2" class="product-subtotal"><span class="font-xl text-brand fw-900">${{grand_total}}</span></td>

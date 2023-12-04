@@ -2,11 +2,14 @@ from django.db import models
 from product_det.models import Product,Product_Variant,Atribute_Value
 from user_log.models import Account
 from django.shortcuts import get_object_or_404
+from Coupon_Mng.models import Coupon
 
 # Create your models here.
 class Cart(models.Model):
     cart_id=models.CharField(max_length=250, blank=True)
     date_added=models.DateField(auto_now_add=True)
+    coupen=models.ForeignKey(Coupon, on_delete=models.CASCADE, null=True, blank=True)
+
 
     def __str__(self):
         return self.cart_id

@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from django.http import HttpResponse,HttpResponseRedirect
 from user_product_mng.models import CartItem,Cart
 from user_log.models import Address,Account
+from Coupon_Mng.models import Coupon
 from product_det.models import Product_Variant
 from .models import Order,OrderProduct,Payment,OrderAddress
 from django.views.decorators.cache import cache_control
@@ -9,6 +10,7 @@ import datetime
 from django.db.models import Max
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from decimal import Decimal
 
 # Create your views here.
 @login_required(login_url='log:user_login')
@@ -17,7 +19,19 @@ def place_order(request, total=0, quantity=0):
 
     current_user=request.user
     cart_items=CartItem.objects.filter(user=current_user)
+    first_cart_item = CartItem.objects.filter(user=current_user).first()
+    cart=Cart.objects.get(cart_id=first_cart_item.cart.cart_id)
+    coupen_id=cart.coupen
+
     cart_count=cart_items.count()
+    try:
+        
+        if cart.coupen is None:
+
+            discount=cart.coupen.discount_rate
+            print(discount)
+    except:
+        pass
     if cart_count<=0:
         return redirect('log:index')
     
@@ -40,16 +54,19 @@ def place_order(request, total=0, quantity=0):
             messages.error(request, f"Sorry, {item_name} is out of stock.")
         cart_items.filter(product_variant__stock=0).delete()  
         return redirect('log:index') 
-
+    
     tax = (2 * total) / 100
-    grand_total = total + tax
+    if coupen_id is not None:
+        coupen=Coupon.objects.get(coupon_id=coupen_id)
+        discount=coupen.discount_rate
+        grand_total=(total + tax ) - discount
+    else:
+        grand_total = total + tax
 
     try:
          selected_address = request.session.get('selected_address')
          if selected_address:
             address_id = selected_address.get('id')
-            print('haiiiiiiiiii')
-            print(address_id)
          address=Address.objects.get(id=address_id)
          Order_Address=OrderAddress.objects.create(
              id=address.id,
@@ -67,11 +84,6 @@ def place_order(request, total=0, quantity=0):
         print(e)
 
     new_address=OrderAddress.objects.get(id=address_id)
-    
-    print('address before save order ')
-    print(address)
-    print('address after save order ')
-    print(new_address)
    
     order = Order.objects.create(
         user=request.user,
@@ -81,7 +93,8 @@ def place_order(request, total=0, quantity=0):
         ip=request.META.get('REMOTE_ADDR')
 
     )
-    order.save()
+    if coupen_id is not None:
+        coupen=coupen
     yr=int(datetime.date.today().strftime('%Y'))
     dt=int(datetime.date.today().strftime('%d'))
     mt=int(datetime.date.today().strftime('%m'))
@@ -100,7 +113,11 @@ def place_order(request, total=0, quantity=0):
         'total':total,
         'cart_items':cart_items
     }
-
+    try:
+       if discount is not None:
+          context['discount'] = discount
+    except:
+        pass
     return render(request,'user_log/conform_order.html',context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -109,7 +126,9 @@ def payment(request, quantity=0, total=0):
    
     order = Order.objects.get(user=request.user, is_ordered=False)
     cart_items = CartItem.objects.filter(user=request.user)
-    
+   
+   
+  
     
     out_of_stock_items=[]
     for cart_item in cart_items:
@@ -182,19 +201,33 @@ def success(request):
 def invoice(request,order_id,total=0):
     try:
         order=Order.objects.get(id=order_id)
+        coupen_id=order.coupen
         orders=OrderProduct.objects.filter(order=order)
     except:
         pass
+    if coupen_id is not None:
+        coupen=Coupon.objects.get(coupon_id=coupen_id)
+        descount=coupen.discount_rate
     grand_total=0
     for item in orders:
         item.subtotal=item.quantity * item.product_price
         total += item.subtotal
     tax=order.tax
-    grand_total = tax + total
+    if coupen_id is not None:
+        grand_total =Decimal(tax + total) - descount
+        # descount_total=grand_total - descount
+    else:
+        grand_total = tax + total
+
     context={
         'order':order,
         'orders':orders,
         'grand_total':grand_total,
         'tax':tax,
     }
+    try:
+       if descount is not None:
+          context['descount'] = descount
+    except:
+        pass
     return render(request,'user_log/bill.html',context) 

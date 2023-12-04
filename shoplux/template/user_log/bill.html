@@ -96,8 +96,12 @@
         </table>
         <br>
         <div class="total">
-            <p><strong>Tax: {{tax}}</strong></p>
-            <p><strong>Order Total: {{grand_total }}</strong></p>
+            <p><strong>Tax: ${{tax}}</strong></p>
+            {% if descount %}
+            <p><strong>Coupen Descount: ${{descount}}</strong></p>
+          {% endif %}
+            <p><strong>Order Total: ${{grand_total }}</strong></p>
+           
         </div>
         
         <div class="print-button">

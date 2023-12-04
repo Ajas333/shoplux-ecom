@@ -84,6 +84,12 @@
                                 <td class="cart_total_label">Tax</td>
                                 <td class="cart_total_amount"> <i class="ti-gift mr-5"></i> ${{tax}}</td>
                             </tr>
+                            {% if discount %}
+                            <tr>
+                              <td class="cart_total_label">Coupen Descount</td>
+                              <td class="cart_discount_amount"> <i class="ti-gift mr-5"></i> ${{discount}}</td>
+                            </tr>
+                          {% endif %}
                             <tr>
                                 <td class="cart_total_label">Total</td>
                                 <td class="cart_total_amount"><strong><span class="font-xl fw-900 text-brand">${{grand_total}}</span></strong></td>

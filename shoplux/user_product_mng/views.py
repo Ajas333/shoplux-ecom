@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect,get_object_or_404
 from django.views.decorators.cache import cache_control
 from product_det.models import Product,Product_Variant,Atribute_Value
 from user_log.models import Address
+from Coupon_Mng.models import Coupon
 from collections import defaultdict
 from django.contrib import messages
 from .models import Cart,CartItem
@@ -10,6 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q,Count
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+import datetime
 
 
 def handle_color_selection(request):
@@ -71,9 +73,7 @@ def cart(request, total=0, quantity=0, cart_item=None):
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
-        # if not cart_items:
-        #     messages.error(request, "Your cart is empty")
-        #     return redirect('log:index')
+       
     except ObjectDoesNotExist:
         cart_items = []  
         tax = grand_total = 0
@@ -84,18 +84,39 @@ def cart(request, total=0, quantity=0, cart_item=None):
 
             cart = Cart.objects.get(cart_id=_cart_id(request))
             cart_items = CartItem.objects.filter(cart=cart, is_active=True)
-        
+        try:
+            if request.method=="POST":
+               coupen_code=request.POST.get('coupon_code')
+               try:
+                   coupon = Coupon.objects.get(coupon_id=coupen_code)
+                   current_date = datetime.date.today()
+                   if coupon.is_active:
+                       Coupen_org=Coupon.objects.get(coupon_id=coupon)
+                       descount=coupon.discount_rate
+                       cart.coupen=Coupen_org
+                       cart.save()
+                       messages.success(request, 'Coupon applied successfully!')
+                   else:
+                       messages.error(request, 'Coupon has expired')
+               except Coupon.DoesNotExist:
+                   messages.error(request, 'Invalid coupon code')
+            
+        except:
+            pass
         for cart_item in cart_items:
-            # Assuming there's a relationship between CartItem and Product_Variant through product_variant
+            
             product_variant = cart_item.product_variant
-            if product_variant:  # Check if the product variant exists
+            if product_variant:  
                 subtotal = product_variant.product.sale_price * cart_item.quantity
                 total += subtotal
                 quantity += cart_item.quantity
-            
-            
+
         tax = (2 * total) / 100
-        grand_total = total + tax
+        try:
+            if descount:
+               grand_total=(total + tax) - descount  
+        except:  
+            grand_total = total + tax
 
     except ObjectDoesNotExist:
         pass
@@ -105,10 +126,13 @@ def cart(request, total=0, quantity=0, cart_item=None):
         'quantity': quantity,
         'cart_items': cart_items,
         'tax': tax,
-        'grand_total': grand_total,
-        
-        
+        'grand_total': grand_total, 
     }
+    try:
+       if descount is not None:
+          context['descount'] = descount
+    except:
+        pass
     return render(request, 'user_log/shop_cart.html', context)
 
 def _cart_id(request):
@@ -234,9 +258,7 @@ def checkout(request, total=0, quantity=0, cart_item=None):
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
-        # if not cart_items:
-        #     messages.error(request, "Your cart is empty")
-        #     return redirect('log:index')
+       
     except ObjectDoesNotExist:
         cart_items = []  
         tax = grand_total = 0
@@ -265,9 +287,16 @@ def checkout(request, total=0, quantity=0, cart_item=None):
             total += subtotal
             quantity += cart_item.quantity
             
-            
         tax = (2 * total) / 100
-        grand_total = total + tax
+        try:
+            coupen=cart.coupen.coupon_id
+            descount=cart.coupen.discount_rate
+            if cart.coupen.is_active:
+                grand_total = (total + tax) - descount
+            else:
+                messages.error(request,'coupen expired')
+        except:
+             grand_total = total + tax
 
     except ObjectDoesNotExist:
         pass
@@ -290,7 +319,10 @@ def checkout(request, total=0, quantity=0, cart_item=None):
         'grand_total': grand_total,
         'addresses':addresses,
         'address':address,
-        
-        
     }
+    try:
+       if descount is not None:
+          context['descount'] = descount
+    except:
+        pass
     return render(request,'user_log/shop_checkout.html',context)

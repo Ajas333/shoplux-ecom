@@ -22,13 +22,8 @@
                 <div class="col-md-3">
                     <form method="post" action="">
                         {% csrf_token %}
-                        <div class="mb-4">
-                            <label for="product_name" class="form-label">Coupon ID</label>
-                            <input type="text" placeholder="Type here" class="form-control" id="product_name" name="brand_name"/>
-                        </div>
-                        <div class="d-grid">
-                            <button class="btn btn-primary">Create Coupon</button>
-                        </div>
+                        {{ form.as_p }}
+                      <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
                 </div>
                 <div class="col-md-9">
