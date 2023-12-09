@@ -1,0 +1,33 @@
+{% extends 'user_log/base.html' %}
+{% load static %}
+{% block title %} payment {% endblock %}
+{% block  body %}
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        key: 'rzp_test_6HsuV5NiUVTbD7',
+        amount: {{ grand_total }}, 
+        currency: 'INR',
+        prefill: {
+            name: '{{ user.username }}',
+            email: '{{ user.email }}',
+            notes: {
+                success_url: "{% url 'order_mng:create_order' %}"
+            }
+        },
+        handler: function(response) {
+            if (response.razorpay_payment_id) {
+                window.location.href = "{% url 'order_mng:create_order' %}";
+            } else {
+                console.log('Payment failed or canceled');
+            }
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+</script>
+
+{% endblock %}

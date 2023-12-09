@@ -8,8 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout as auth_logout
 from user_log.forms import AddressForm
-from user_log.models import Address,Account
+from user_log.models import Address,Account,Wallet
 from order_mng.models import Order,OrderProduct,OrderAddress
+from Coupon_Mng.models import Coupon
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
@@ -20,13 +21,15 @@ def user_profile(request,user_id):
     
     form = AddressForm()
     account = get_object_or_404(Account, id=user_id)
+    wallet=get_object_or_404(Wallet,user=account)
     addresses = Address.objects.filter(account=account)
     orders=Order.objects.filter(user=request.user)
     print(orders)
     context={
         'form':form,
         'addresses':addresses,
-        'orders':orders
+        'orders':orders,
+        'wallet':wallet
      
     }
     return render(request,'user_log/profile.html',context)
@@ -172,7 +175,14 @@ def order_details(request,order_id, total=0, quantity=0):
             total += subtotal
             quantity += order_item.quantity
     tax = (2 * total) / 100
-    grand_total = total + tax
+    if order.coupen:
+        coupen=Coupon.objects.get(coupon_id=order.coupen)
+        print(coupen.discount_rate)
+        descount=coupen.discount_rate
+        grand_total = (total + tax) - descount
+        print(grand_total)
+    else:
+        grand_total = total + tax
         
     context={
         'order':order,
@@ -182,4 +192,21 @@ def order_details(request,order_id, total=0, quantity=0):
         'grand_total':grand_total
        
     }
+    try:
+        if descount is not None:
+            context['descount'] = descount
+    except:
+         pass
     return render(request,'user_log/order_details.html',context)
+
+def cancell(request,order_id):
+   
+    print(order_id)
+    try:
+        order=Order.objects.get(id=order_id)
+    except Exception as e:
+        print(e)
+    
+    order.status = 'Cancelled'
+    order.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

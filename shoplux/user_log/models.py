@@ -86,5 +86,13 @@ class Address(models.Model):
 
     
 
-
+class Wallet(models.Model):
+    user=models.OneToOneField(Account, on_delete=models.CASCADE)
+    balance=models.IntegerField(default=0)
+    
+class WalletHistory(models.Model):
+    wallet=models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    type=models.CharField(null=True, blank=True, max_length=20)
+    created_at=models.DateField(auto_created=True)
+    amount=models.IntegerField()
 

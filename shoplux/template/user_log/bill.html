@@ -69,7 +69,7 @@
             <p><strong>Order ID:</strong> ORD{{order.order_id}}</p>
             <p><strong>Order Date:</strong> {{order.created_at}}</p>
             <p><strong>Customer Name:</strong> {{order.user.username}}</p>
-            <p><strong>Payment method :</strong> Cash On Delivery</p>
+            <p><strong>Payment method :</strong>{{order.payment.payment_method}}</p>
             <!-- {% if order.payment_method.method != "COD" %}
                 <p><strong>Payment Status :</strong> {% if is_paid %}Paid{% else %}Pending{% endif %}</p>
             {% endif %} -->

@@ -2,6 +2,8 @@
 {% load static %}
 {% block title %} Conform Order {% endblock %}
 {% block  body %}
+<form method="post" action="{% url 'order_mng:payment' %}">
+    {% csrf_token %}
 <section class="mt-50 mb-50">
     <div class="container">
         <div class="row">
@@ -35,7 +37,18 @@
                         <p>Payment Method</p>
                     </div>
                        <div class="card-body">
-                           <strong>Cash On Delivery</strong>
+                        <div class="payment_method">
+                        
+                            <div class="payment_option">
+                                <input class="form-check-input" type="radio" name="payment_option" id="wallet" value="wallet" required>
+                                <label class="form-check-label" for="wallet">Wallet</label><br>
+                                <input class="form-check-input" type="radio" name="payment_option" id="razorpay" value="razorpay" required>
+                                <label class="form-check-label" for="razorpay">RazorPay</label><br>
+                                <input class="form-check-input" type="radio" name="payment_option" id="cash_on_delivery" value="cash_on_delivery" required>
+                                <label class="form-check-label" for="cashOnDelivery">Cash on Delivery</label>
+                            </div>
+                        
+                        </div>
                        </div>
                 </div>
                 <div class="card text-dark bg-light">
@@ -96,11 +109,11 @@
                             </tr>
                         </tbody>
                     </table>
-                    <a href="{% url 'order_mng:payment' %}" class="btn btnn-sm">Conform</a>
+                    <button type="submit" class="btn btnn-sm">Conform</button>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
+</form>
 {% endblock %}

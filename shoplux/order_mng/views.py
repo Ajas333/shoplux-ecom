@@ -1,16 +1,18 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse,HttpResponseRedirect
 from user_product_mng.models import CartItem,Cart
-from user_log.models import Address,Account
+from user_log.models import Address,Account,Wallet
 from Coupon_Mng.models import Coupon
 from product_det.models import Product_Variant
 from .models import Order,OrderProduct,Payment,OrderAddress
 from django.views.decorators.cache import cache_control
 import datetime
 from django.db.models import Max
+from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
+import razorpay
 
 # Create your views here.
 @login_required(login_url='log:user_login')
@@ -88,7 +90,7 @@ def place_order(request, total=0, quantity=0):
          Order_Address.save()
     except Exception as e:
         print(e)
-
+    
     new_address=OrderAddress.objects.get(id=address_id)
    
     order = Order.objects.create(
@@ -96,11 +98,10 @@ def place_order(request, total=0, quantity=0):
         address=new_address,
         order_total=grand_total,
         tax=tax,
-        ip=request.META.get('REMOTE_ADDR')
-
+        ip=request.META.get('REMOTE_ADDR'),
     )
     if coupen_id is not None:
-        coupen=coupen
+        order.coupen=coupen
     yr=int(datetime.date.today().strftime('%Y'))
     dt=int(datetime.date.today().strftime('%d'))
     mt=int(datetime.date.today().strftime('%m'))
@@ -126,17 +127,23 @@ def place_order(request, total=0, quantity=0):
         pass
     return render(request,'user_log/conform_order.html',context)
 
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url='log:user_login')
 def payment(request, quantity=0, total=0):
-   
-    order = Order.objects.get(user=request.user, is_ordered=False)
-    cart_items = CartItem.objects.filter(user=request.user)
-   
-   
-  
+
+    if request.method == "POST": 
+        payment_option = request.POST.get('payment_option')
     
+    order = Order.objects.get(user=request.user, is_ordered=False)
+    coupen_id=order.coupen
+    cart_items = CartItem.objects.filter(user=request.user)
     out_of_stock_items=[]
+    if coupen_id is not None:
+        coupen=Coupon.objects.get(coupon_id=coupen_id)
+        descount=coupen.discount_rate
+
     for cart_item in cart_items:
         product_variant = cart_item.product_variant
         if product_variant and product_variant.stock < cart_item.quantity:
@@ -153,20 +160,18 @@ def payment(request, quantity=0, total=0):
         cart_items.filter(product_variant__stock=0).delete()
         return redirect('log:index')
     tax = (2 * total) / 100
-    grand_total = total + tax
+    if coupen_id is not None:
+        grand_total =Decimal(tax + total) - descount
+        
+    else:
+        grand_total = tax + total
 
     # Create a payment object
-    payment = Payment.objects.create(
-        user=request.user,
-        payment_method="cash on delivery",
-        amount_paid=grand_total,
-    )
 
     
     for item in cart_items:
         order_product = OrderProduct()
         order_product.order = order  # Assign the 'order' instance directly
-        order_product.payment = payment  # Assign the 'payment' instance directly
         order_product.user = request.user
         order_product.product_variant = item.product_variant
         order_product.color = item.color.atribute_value
@@ -179,41 +184,129 @@ def payment(request, quantity=0, total=0):
         product_variant.stock -= item.quantity
         product_variant.save()
 
-    CartItem.objects.filter(user=request.user).delete()
     
-    try:
-        if order.is_ordered == False:
-            order.is_ordered = True
-    except ValueError:
-        pass
-    order.save()
+
     request.session['order_id']=order.id
-    return redirect('order_mng:success')
+    if payment_option == "cash_on_delivery":
+        try:
+            if order.is_ordered == False:
+                order.is_ordered = True
+
+                payment=Payment.objects.create(
+                    user=request.user, 
+                    payment_method='Cash on Delivery',
+                    Payment_id='COD'
+                )
+                order.payment=payment
+                CartItem.objects.filter(user=request.user).delete()
+        except ValueError:
+            pass
+        order.save()
+       
+        return redirect('order_mng:success')
+    
+    elif  payment_option == "wallet": 
+        try: 
+            wallet=Wallet.objects.get(user=request.user)
+            if grand_total < wallet.balance:
+                try:
+                    if order.is_ordered == False:
+                        order.is_ordered = True
+
+                        payment=Payment.objects.create(
+                            user=request.user, 
+                            payment_method='Wallet',
+                            Payment_id='wlt'
+                        )
+                        order.payment=payment
+                        order.save()
+                        CartItem.objects.filter(user=request.user).delete()
+                        return redirect('order_mng:success')
+                        
+                except ValueError:
+                    pass
+            else:
+                messages.error(request,'wallet balance less than total amount')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        except ValueError:
+            pass
+        
+
+    elif payment_option == "razorpay":
+            print("Selected Payment Option: RazorPay")
+            discounted_total = float(grand_total)
+            request.session['discounted_total'] = discounted_total
+            discounted_total = int(discounted_total * 100)
+
+            client = razorpay.Client(auth=("rzp_test_6HsuV5NiUVTbD7", "y3RXbnznWCtaYRFOq1CFuNdS"))
+
+            DATA = {
+                "amount": int(discounted_total),
+                "currency": "INR",
+                "payment_capture":'1'
+                
+            }
+            client.order.create(data=DATA)
+
+            return render(request,"user_log/razorpay.html", {"grand_total":discounted_total})       
+    
+       
 
 def success(request):
     try:
         order_id=request.session.get('order_id')
         new_order=Order.objects.get(id=order_id)
+        request.session['stored_order_id'] = new_order.id
+        
     except Exception as e:
         print(e)
     
     
+
     context={
         'new_order':new_order
     }
     
     return render(request,'user_log/success.html',context)
 
+
+def create_order(request):
+    order_id=request.session.get('order_id')
+    order=Order.objects.get(id=order_id)
+    try:
+        if order.is_ordered == False:
+            order.is_ordered = True
+            payment=Payment.objects.create(
+                    user=request.user, 
+                    payment_method='razorpay',
+                    Payment_id='rzp'
+                )
+            order.payment=payment
+            order.save()
+            CartItem.objects.filter(user=request.user).delete()
+        else:
+            pass
+    except ValueError:
+            pass
+    
+    return redirect('order_mng:success')
+
+
+
 def invoice(request,order_id,total=0):
     try:
         order=Order.objects.get(id=order_id)
         coupen_id=order.coupen
+        print(coupen_id)
         orders=OrderProduct.objects.filter(order=order)
+        print("haiiiiiiiiiiiiiiiiii")
     except:
         pass
     if coupen_id is not None:
         coupen=Coupon.objects.get(coupon_id=coupen_id)
         descount=coupen.discount_rate
+        print("helllllllllllooooooooooooo")
+        print(descount)
     grand_total=0
     for item in orders:
         item.subtotal=item.quantity * item.product_price
@@ -237,3 +330,5 @@ def invoice(request,order_id,total=0):
     except:
         pass
     return render(request,'user_log/bill.html',context) 
+
+

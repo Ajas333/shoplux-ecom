@@ -24,7 +24,7 @@ def handle_color_selection(request):
 
 
 def variant_color(request, product_id, varient_size):
-    product = Product.objects.select_related('product_brand').get(id=product_id)
+    # product = Product.objects.select_related('product_brand').get(id=product_id)
     product_variants = Product_Variant.objects.filter(product_id=product_id, atributes__id=varient_size)
     color_attribute_values = Atribute_Value.objects.filter(
         Q(attributes__in=product_variants),
@@ -89,7 +89,7 @@ def cart(request, total=0, quantity=0, cart_item=None):
                coupen_code=request.POST.get('coupon_code')
                try:
                    coupon = Coupon.objects.get(coupon_id=coupen_code)
-                   current_date = datetime.date.today()
+                
                    if coupon.is_active:
                        Coupen_org=Coupon.objects.get(coupon_id=coupon)
                        descount=coupon.discount_rate
@@ -321,9 +321,12 @@ def checkout(request, total=0, quantity=0, cart_item=None):
             print(e)
     else:
         address=addresses.filter(is_default=True).first()
-    request.session['selected_address'] = {
+    try:
+        request.session['selected_address'] = {
             'id': address.id,
         }
+    except:
+        messages.error(request,"add address")
     context = {
         'total': total,
         'quantity': quantity,

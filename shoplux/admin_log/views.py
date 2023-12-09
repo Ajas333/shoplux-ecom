@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from order_mng.forms import OrderForm
 from django.core.paginator import Paginator
+from Coupon_Mng.models import Coupon
 
 # Create your views here.
 
@@ -103,10 +104,10 @@ def order_details(request,order_id, total=0, quantity=0):
         return redirect('adminlog:admin_login')
     try:
         order=Order.objects.get(id=order_id)
+        coupen_id=order.coupen
     except Exception as e:
         print(e)
     order_items=OrderProduct.objects.filter(order=order)
-
     address=order.address
     
     grand_total = 0
@@ -118,8 +119,18 @@ def order_details(request,order_id, total=0, quantity=0):
         
             total += subtotal
             quantity += order_item.quantity
+
+    if order.coupen is not None:
+            
+            coupen=Coupon.objects.get(coupon_id=coupen_id)
+            discount=coupen.discount_rate  
     tax = (2 * total) / 100
-    grand_total = total + tax
+    try:
+        if discount is not None:
+            grand_total= (total + tax) - discount
+    except:
+        grand_total = total + tax
+    
     
     if request.method=="POST":
         form=OrderForm(request.POST, instance=order)
@@ -142,6 +153,11 @@ def order_details(request,order_id, total=0, quantity=0):
         'total':total,
         'form':form
             }
+    try:
+        if order.coupen is not None:
+            context['discount']=discount
+    except:
+        pass
     return render(request,'admin_side/page_orders_detail.html',context)
 
 

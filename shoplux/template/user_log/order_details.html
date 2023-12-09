@@ -23,7 +23,7 @@
                             </tr>
                             <tr>
                                 <th>Type of payment</th>
-                                    <td>Cash On Delivary</td>
+                                    <td>{{order.payment.payment_method}}</td>
                                
                             </tr>
                             <tr>
@@ -42,7 +42,7 @@
                         <span>Your order with reference {{order.order_id}} is cancelled</span>
                         
                         {% else %}
-                        <a class="btn btn-sm cancel-order" href="{% url 'adminlog:cancell_order' order.id %}">Cancel Order</a>
+                        <a class="btn btn-sm cancel-order" href="{% url 'user_area:cancell' order.id %}">Cancel Order</a>
                         {% endif %}
                     </div>
                 </div>
@@ -85,11 +85,14 @@
                             <td colspan="6">
                                 <article class="float-end">
                                     <dl class="dlist">
-                                        <dt><h4>Tax:</h4></dt>
-                                        <dd>{{ tax }}</dd>
-
-                                        <dt><h4>Grand total:</h4></dt>
-                                        <dd><b>₹ {{ grand_total }}</b></dd>
+                                        <dt><h4>Tax:</h4>₹ {{ tax }}</dt>
+                                        
+                                        {% if descount %}
+                                        <dt><h4>Discount:</h4>₹ {{ descount }}</dt>
+                                       
+                                        {% endif %}
+                                        <dt><h4>Grand total:</h4>₹ {{ grand_total }}</dt>
+                                        
                                     </dl>
                                 </article>
                             </td>

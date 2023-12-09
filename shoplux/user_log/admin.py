@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Account
+from .models import Account,Wallet
+
 
 # Register your models here.
-admin.site.register(Account)  
+class UserWallet(admin.ModelAdmin):
+    list_display = ('user', 'balance')
+    search_fields = ('user',)
+admin.site.register(Account)
+admin.site.register(Wallet,UserWallet)

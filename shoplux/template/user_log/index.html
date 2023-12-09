@@ -74,16 +74,20 @@
 <section class="banners mb-15 mt-15">
     <div class="container">
         <div class="row">
+            {% if product_offers %}
+            {% for offer in product_offers %}
             <div class="col-lg-4 col-md-6">
                 <div class="banner-img wow fadeIn animated">
-                    <img src="static/image/banner/banner-1.png" alt="">
+                    <img src="{{offer.image.url}}" alt="">
                     <div class="banner-text">
-                        <span>Smart Offer</span>
-                        <h4>Save 20% on <br>Woman Bag</h4>
+                        <span class="text-white">{{offer.title}}</span>
+                        <h4 class="text-white">Save {{offer.discount}}% on <br>{{offer.product.product_name}}</h4>
                         <a href="shop-grid-right.html">Shop Now <i class="fi-rs-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
+            {% endfor %}
+            {% endif %}
             
             
         </div>

@@ -1,7 +1,7 @@
 from django.shortcuts import render,HttpResponse,redirect
 from django.contrib.auth.models import User,auth
 from django.contrib import messages
-from .models import Account
+from .models import Account,Wallet
 from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
@@ -26,6 +26,7 @@ def index(request):
         return redirect('log:user_login')
     product=Product.objects.all()
     Product_Variants=Product_Variant.objects.filter(is_active=True)
+    product_offers=ProductOffer.objects.filter(is_active=True)
     for p in product:
        try:
            product_offer=ProductOffer.objects.get(product=p)
@@ -37,14 +38,17 @@ def index(request):
                p.save()
            
        except:
-           pass
+           p.product_offer = 0
+           p.save()
     for p in product:
         print(p.sale_price)
     context={
         'products':product,
         'product_variants':Product_Variants
     }
-       
+    if product_offers is not None:
+        context['product_offers']=product_offers
+
     return render(request, 'user_log/index.html',context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -136,6 +140,9 @@ def user_signup(request):
             return redirect('log:user_signup')
         user=Account.objects.create_user(email=email, password=password,username=user)
         user.save()
+        Wallet.objects.create(
+            user=user
+        )
         request.session['email']=email
         return redirect('log:sent_otp')
 
