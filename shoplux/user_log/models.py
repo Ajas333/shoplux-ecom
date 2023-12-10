@@ -93,6 +93,6 @@ class Wallet(models.Model):
 class WalletHistory(models.Model):
     wallet=models.ForeignKey(Wallet, on_delete=models.CASCADE)
     type=models.CharField(null=True, blank=True, max_length=20)
-    created_at=models.DateField(auto_created=True)
+    created_at=models.DateField(auto_now_add=True)
     amount=models.IntegerField()
 

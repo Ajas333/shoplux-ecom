@@ -30,6 +30,7 @@ class Order(models.Model):
         ('Shipped','Shipped'),
         ('Delivered','Delevered'),
         ('Cancelled','Cancelled'),
+        ('Return','Return')
 
     )
     user=models.ForeignKey(Account, on_delete=models. CASCADE)
@@ -37,7 +38,7 @@ class Order(models.Model):
     order_id=models.CharField(max_length=100)
     address=models.ForeignKey(OrderAddress, on_delete=models.CASCADE)
     order_note=models.CharField(max_length=100, blank=True)
-    order_total=models.FloatField()
+    order_total=models.FloatField() 
     tax=models.FloatField()
     status=models.CharField(max_length=10, choices=STATUS, default='New')
     ip=models.CharField(blank=True, max_length=20)
@@ -66,7 +67,11 @@ class OrderProduct(models.Model):
     updated_at=models.DateField(auto_now=True)
     
     def sub_total(self):
-        return self.product_variant.product.sale_price * self.quantity
+        if self.product_variant.product.product_offer is not None and self.product_variant.product.product_offer > 0:
+            return self.product_variant.product.product_offer * self.quantity
+        else:  
+            return self.product_variant.product.sale_price * self.quantity
+    
     
     def __str__(self):
         return self.product_variant.product_variant_slug

@@ -36,11 +36,12 @@
                            
                         </table>
                         {% if order.status == 'Delivered' %}
-                            <button type="submit">Return Order</button>
+                        <a class="btn btn-sm return-order" href="{% url 'user_area:return_order' order.id %}">Return Order</a>
                         
                         {% elif order.status == 'Cancelled' %}
                         <span>Your order with reference {{order.order_id}} is cancelled</span>
-                        
+                        {% elif order.status == 'Return' %}
+                        <span>Your order with reference {{order.order_id}} is Returned</span>
                         {% else %}
                         <a class="btn btn-sm cancel-order" href="{% url 'user_area:cancell' order.id %}">Cancel Order</a>
                         {% endif %}
@@ -75,7 +76,13 @@
                             <tr>
                                 <td><img src="{{ order_item.product_variant.thumbnail_image.url }}" alt="{{ order_item.product_variant.product.name }}" width="100"></td>
                                 <td>{{ order_item.product_variant.product_variant_slug }} <br>Size:{{order_item.size}}<br> Color:{{order_item.color}}</td>
-                                <td>${{ order_item.product_price }}</td>
+                                
+                                    {% if order_item.product_variant.product.product_offer is not None and order_item.product_variant.product.product_offer > 0  %}
+                                         <td class="price" data-title="Price"><span>${{  order_item.product_variant.product.product_offer }}</span></td>
+                                    {% else %}  
+                                        <td class="price" data-title="Price"><span>${{  order_item.product_price }}</span></td>
+                                    {% endif %}
+                                
                                 <td>{{ order_item.quantity }}</td>
                                 <td>${{ order_item.sub_total }}</td>
                             </tr>

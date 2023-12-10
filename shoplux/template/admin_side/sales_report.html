@@ -23,10 +23,10 @@
                 <div class="d-flex gap-3">
                 
                     <label for="start_date">Starting Date:</label>
-                    <input type="date" name="start_date" id="start_date" class="form-control" value="" required>
+                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date_value }}" required>
 
                     <label for="end_date">Ending Date:</label>
-                    <input type="date" name="end_date" id="end_date" class="form-control" value="" required>
+                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date_value }}" required>
 
                     <button type="submit" class="btn btn-dark h-auto">Filter</button>
                 </div>
@@ -59,8 +59,12 @@
                 <td>{{order.order_id}}</td>
                 <td>{{order.user.username}}</td>
                 <td>{{order.order_total}}</td>
-                <td>Paid</td>
-                <td>Nil</td>
+                <td>{{order.payment.payment_method}}</td>
+                {% if order.coupen is not None %}
+                  <td>{{order.coupen}}</td>
+                {% else %}
+                  <td>Nil</td>
+                {% endif %}
             </tr>
             {% endfor %}
         {% endif %} 

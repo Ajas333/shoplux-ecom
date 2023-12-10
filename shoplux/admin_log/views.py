@@ -90,7 +90,8 @@ def block_unblock_user(request,user_id):
 def order_list(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
-    orders=Order.objects.all()
+    
+    orders = Order.objects.order_by('-created_at')
 
     context={
         'orders':orders,

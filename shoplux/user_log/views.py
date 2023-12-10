@@ -20,10 +20,8 @@ import re
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@login_required(login_url='log:user_login')
 def index(request):
-    if not request.user.is_authenticated:
-        return redirect('log:user_login')
+   
     product=Product.objects.all()
     Product_Variants=Product_Variant.objects.filter(is_active=True)
     product_offers=ProductOffer.objects.filter(is_active=True)
@@ -180,7 +178,6 @@ def verify_otp(request):
          messages.success(request, "signup successful!")
          return redirect('log:index')
    return render(request,'user_log/otp_verification.html')
-
 
 def user_logout(request):
     logout(request)

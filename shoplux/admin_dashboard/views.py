@@ -80,17 +80,20 @@ def dashboard(request):
 def sales_report(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
-
+    start_date_value = ""
+    end_date_value = ""
     try:
-        orders=Order.objects.filter(is_ordered = True)
+
+        orders=Order.objects.filter(is_ordered = True).order_by('-created_at')
     
     except:
         pass
     if request.method == 'POST':
-        print("haiiiiiiiiiii")
+        print("agathott keryyyyyyyyyyyy")
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
-
+        start_date_value = start_date
+        end_date_value = end_date
         if start_date and end_date:
             # Convert the dates to datetime objects
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
@@ -98,9 +101,12 @@ def sales_report(request):
 
             # Filter orders between start_date and end_date
             orders = orders.filter(created_at__range=(start_date, end_date))
-    print(orders)
+    print("date........................................")
+    print(start_date  ,  end_date)
     context={
-        'orders':orders
+        'orders':orders,
+        'start_date_value':start_date_value,
+        'end_date_value':end_date_value
     }
 
     return render(request,'admin_side/sales_report.html',context)

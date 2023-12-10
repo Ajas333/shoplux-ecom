@@ -5,7 +5,7 @@ from user_log.models import Address
 from Coupon_Mng.models import Coupon
 from collections import defaultdict
 from django.contrib import messages
-from .models import Cart,CartItem
+from .models import Cart,CartItem,Wishlist,WishlistItems
 from django.http import HttpResponse,HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q,Count
@@ -221,7 +221,10 @@ def add_cart(request, product_id, varient_size):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     else:
         # Handle case when product variant with given color and size isn't found
-        return HttpResponse("Product variant not found.")
+        messages.error(request,"Pleas select color")
+        return redirect('user_product:product_details', product_id=product_id, size_id=varient_size)
+
+        
     
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -342,3 +345,17 @@ def checkout(request, total=0, quantity=0, cart_item=None):
     except:
         pass
     return render(request,'user_log/shop_checkout.html',context)
+
+
+def wishlist(request):
+    if not request.user.is_authenticated:
+        messages.info(request,'login to access wishlist')
+        return redirect('log:user_login')
+    else:
+        wishlist=Wishlist.objects.get(user=request.user)
+        wishlist_items=WishlistItems.objects.filter(wishlist=wishlist)
+
+        context={
+            'wishlist_items':wishlist_items
+        }
+    return render(request,'user_log/wishlist.html')

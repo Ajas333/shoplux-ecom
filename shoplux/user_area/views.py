@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout as auth_logout
 from user_log.forms import AddressForm
-from user_log.models import Address,Account,Wallet
+from user_log.models import Address,Account,Wallet,WalletHistory
 from order_mng.models import Order,OrderProduct,OrderAddress
 from Coupon_Mng.models import Coupon
 from django.urls import reverse
@@ -22,14 +22,17 @@ def user_profile(request,user_id):
     form = AddressForm()
     account = get_object_or_404(Account, id=user_id)
     wallet=get_object_or_404(Wallet,user=account)
+    wallethistory = WalletHistory.objects.filter(wallet=wallet)
     addresses = Address.objects.filter(account=account)
     orders=Order.objects.filter(user=request.user)
-    print(orders)
+    
+    print(wallethistory)
     context={
         'form':form,
         'addresses':addresses,
         'orders':orders,
-        'wallet':wallet
+        'wallet':wallet,
+        'wallethistory':wallethistory,
      
     }
     return render(request,'user_log/profile.html',context)
@@ -94,15 +97,6 @@ def change_password(request,user_id):
             
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def logout(request):
-    auth_logout(request)
-    return redirect('log:index') 
-
-
-
 @login_required(login_url='log:user_login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_address(request,user_id):
@@ -165,12 +159,23 @@ def order_details(request,order_id, total=0, quantity=0):
     address=order.address
     print(address)
     
-    grand_total = 0
+    grand_total = order.order_total
     tax = 0
     for order_item in order_items:
         product_variant = order_item.product_variant
+        print(product_variant.product.product_offer    )
         if product_variant:  # Check if the product variant exists
-            subtotal = product_variant.product.sale_price * order_item.quantity
+            try:  
+                if product_variant.product.product_offer is not None and product_variant.product.product_offer > 0:
+                      print("haaaaaaaaaaaaallllllllllloooooooooooooooooo")
+                      subtotal = product_variant.product.product_offer * order_item.quantity
+                      print(subtotal)
+                else:
+                       print("onnulllaaaa myreeeeee")
+                       subtotal = product_variant.product.sale_price * order_item.quantity
+            except:
+                     pass
+                     
            
             total += subtotal
             quantity += order_item.quantity
@@ -179,10 +184,6 @@ def order_details(request,order_id, total=0, quantity=0):
         coupen=Coupon.objects.get(coupon_id=order.coupen)
         print(coupen.discount_rate)
         descount=coupen.discount_rate
-        grand_total = (total + tax) - descount
-        print(grand_total)
-    else:
-        grand_total = total + tax
         
     context={
         'order':order,
@@ -200,13 +201,72 @@ def order_details(request,order_id, total=0, quantity=0):
     return render(request,'user_log/order_details.html',context)
 
 def cancell(request,order_id):
-   
-    print(order_id)
     try:
-        order=Order.objects.get(id=order_id)
+        order = Order.objects.get(id=order_id)
+        wallet = Wallet.objects.get(user=request.user)
+
+        if order.payment.payment_method == 'Wallet' or order.payment.payment_method == 'razorpay':
+            wallet.balance += order.order_total
+            wallet.save()
+            WalletHistory.objects.create(
+                        wallet=wallet,
+                        type='Credited',
+                        amount=order.order_total
+                        )
+
+            refunded_message = f'Amount of {order.order_total} refunded successfully to your wallet.'
+            messages.success(request, refunded_message)
+        order.status = 'Cancelled'
+        order.save()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+    except Order.DoesNotExist:
+        print("Order does not exist")
+        pass
+
+    except Wallet.DoesNotExist:
+        print("Wallet does not exist")
+      
+        pass
+
     except Exception as e:
         print(e)
-    
-    order.status = 'Cancelled'
-    order.save()
+       
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+def return_order(request,order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+        wallet = Wallet.objects.get(user=request.user)
+
+        wallet.balance += order.order_total
+        wallet.save()
+        WalletHistory.objects.create(
+                    wallet=wallet,
+                    type='Credited',
+                    amount=order.order_total
+                    )
+
+        refunded_message = f'Amount of {order.order_total} refunded successfully to your wallet.'
+        messages.success(request, refunded_message)
+        order.status = 'Return'
+        order.save()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+    except Order.DoesNotExist:
+        print("Order does not exist")
+        pass
+
+    except Wallet.DoesNotExist:
+        print("Wallet does not exist")
+      
+        pass
+
+    except Exception as e:
+        print(e)
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+

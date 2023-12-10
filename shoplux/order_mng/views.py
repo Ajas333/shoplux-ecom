@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse,HttpResponseRedirect
 from user_product_mng.models import CartItem,Cart
-from user_log.models import Address,Account,Wallet
+from user_log.models import Address,Account,Wallet,WalletHistory
 from Coupon_Mng.models import Coupon
 from product_det.models import Product_Variant
 from .models import Order,OrderProduct,Payment,OrderAddress
@@ -24,7 +24,7 @@ def place_order(request, total=0, quantity=0):
     first_cart_item = CartItem.objects.filter(user=current_user).first()
     cart=Cart.objects.get(cart_id=first_cart_item.cart.cart_id)
     coupen_id=cart.coupen
-
+    request.session['coupen_id']=coupen_id.id
     cart_count=cart_items.count()
     try:
         
@@ -70,7 +70,9 @@ def place_order(request, total=0, quantity=0):
         grand_total=(total + tax ) - discount
     else:
         grand_total = total + tax
-
+    request.session['grand_total'] = float(grand_total)
+    request.session['tax'] = float(tax)
+    
     try:
          selected_address = request.session.get('selected_address')
          if selected_address:
@@ -92,26 +94,7 @@ def place_order(request, total=0, quantity=0):
         print(e)
     
     new_address=OrderAddress.objects.get(id=address_id)
-   
-    order = Order.objects.create(
-        user=request.user,
-        address=new_address,
-        order_total=grand_total,
-        tax=tax,
-        ip=request.META.get('REMOTE_ADDR'),
-    )
-    if coupen_id is not None:
-        order.coupen=coupen
-    yr=int(datetime.date.today().strftime('%Y'))
-    dt=int(datetime.date.today().strftime('%d'))
-    mt=int(datetime.date.today().strftime('%m'))
-    d= datetime.date(yr, mt, dt)
-    current_date= d.strftime("%Y%m%d")
-
-    order_number=current_date + str(order.id)
-
-    order.order_id = order_number
-    order.save()
+    request.session['new_address']=new_address.id
 
     context={
         'address':address,
@@ -136,13 +119,10 @@ def payment(request, quantity=0, total=0):
     if request.method == "POST": 
         payment_option = request.POST.get('payment_option')
     
-    order = Order.objects.get(user=request.user, is_ordered=False)
-    coupen_id=order.coupen
+   
     cart_items = CartItem.objects.filter(user=request.user)
+    new_address=OrderAddress.objects.get(id=request.session.get('new_address'))
     out_of_stock_items=[]
-    if coupen_id is not None:
-        coupen=Coupon.objects.get(coupon_id=coupen_id)
-        descount=coupen.discount_rate
 
     for cart_item in cart_items:
         product_variant = cart_item.product_variant
@@ -159,32 +139,58 @@ def payment(request, quantity=0, total=0):
             messages.error(request, f"Sorry, {item_name} is out of stock.")
         cart_items.filter(product_variant__stock=0).delete()
         return redirect('log:index')
+    
     tax = (2 * total) / 100
+    print("taxum totalum,......................")
+    print( tax, total)
+    coupen_id=request.session.get('coupen_id')
     if coupen_id is not None:
-        grand_total =Decimal(tax + total) - descount
+        coupen=Coupon.objects.get(id=coupen_id)
         
-    else:
-        grand_total = tax + total
+    grand_total=request.session.get('grand_total')
 
-    # Create a payment object
+    order=None
+    try:
+        order = Order.objects.get(user=request.user, is_ordered=False)
+    except Order.DoesNotExist:
+         pass
+    if not order:
+        order = Order.objects.create(
+            user=request.user,
+            address=new_address,
+            order_total=grand_total,
+            tax=request.session.get('tax'),
+            ip=request.META.get('REMOTE_ADDR'),
+        )
+        if coupen_id is not None:
+            order.coupen=coupen
+        yr=int(datetime.date.today().strftime('%Y'))
+        dt=int(datetime.date.today().strftime('%d'))
+        mt=int(datetime.date.today().strftime('%m'))
+        d= datetime.date(yr, mt, dt)
+        current_date= d.strftime("%Y%m%d")
 
+        order_number=current_date + str(order.id)
     
-    for item in cart_items:
-        order_product = OrderProduct()
-        order_product.order = order  # Assign the 'order' instance directly
-        order_product.user = request.user
-        order_product.product_variant = item.product_variant
-        order_product.color = item.color.atribute_value
-        order_product.size = item.size.atribute_value
-        order_product.quantity = item.quantity
-        order_product.product_price = item.product_variant.product.sale_price
-        order_product.ordered = True
-        order_product.save()
-        product_variant=Product_Variant.objects.get(id=item.product_variant.id)
-        product_variant.stock -= item.quantity
-        product_variant.save()
+        order.order_id = order_number
+        order.save()
 
-    
+    existing_order_products = OrderProduct.objects.filter(order=order)
+    if not existing_order_products.exists():
+        for item in cart_items:
+            order_product = OrderProduct()
+            order_product.order = order  # Assign the 'order' instance directly
+            order_product.user = request.user
+            order_product.product_variant = item.product_variant
+            order_product.color = item.color.atribute_value
+            order_product.size = item.size.atribute_value
+            order_product.quantity = item.quantity
+            order_product.product_price = item.product_variant.product.sale_price
+            order_product.ordered = True
+            order_product.save()
+            product_variant=Product_Variant.objects.get(id=item.product_variant.id)
+            product_variant.stock -= item.quantity
+            product_variant.save()
 
     request.session['order_id']=order.id
     if payment_option == "cash_on_delivery":
@@ -220,14 +226,23 @@ def payment(request, quantity=0, total=0):
                         )
                         order.payment=payment
                         order.save()
+                        wallet.balance -= grand_total
+                        wallet.save()
+                        WalletHistory.objects.create(
+                            wallet=wallet,
+                            type='Debit',
+                            amount=grand_total
+                        )
+
                         CartItem.objects.filter(user=request.user).delete()
                         return redirect('order_mng:success')
-                        
+                      
                 except ValueError:
                     pass
             else:
                 messages.error(request,'wallet balance less than total amount')
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            
         except ValueError:
             pass
         
