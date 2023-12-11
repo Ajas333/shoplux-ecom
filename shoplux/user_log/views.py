@@ -29,17 +29,16 @@ def index(request):
        try:
            product_offer=ProductOffer.objects.get(product=p)
            if product_offer.is_active:
-               print("haiiiiiiiiiiii")
+              pass
            else:
-               print("hellllllloooooo")
                p.product_offer = 0
                p.save()
            
        except:
            p.product_offer = 0
            p.save()
-    for p in product:
-        print(p.sale_price)
+    
+       
     context={
         'products':product,
         'product_variants':Product_Variants

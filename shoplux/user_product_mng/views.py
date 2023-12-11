@@ -354,8 +354,43 @@ def wishlist(request):
     else:
         wishlist=Wishlist.objects.get(user=request.user)
         wishlist_items=WishlistItems.objects.filter(wishlist=wishlist)
-
+        print(wishlist_items)
         context={
             'wishlist_items':wishlist_items
         }
-    return render(request,'user_log/wishlist.html')
+    return render(request,'user_log/wishlist.html',context)
+
+
+def add_wishlist(request,product_id):
+    if not request.user.is_authenticated:
+        messages.info(request,'login to access wishlist')
+        return redirect('log:user_login')
+    else:
+        try:
+            print("wishlist already exist.....................................")
+            wishlist=Wishlist.objects.get(user=request.user)
+           
+        except:
+            print("create new wishlist.................................")
+            wishlist=Wishlist.objects.create(user=request.user)
+            
+
+        product=get_object_or_404(Product,id=product_id)
+        print(product)
+
+        if WishlistItems.objects.filter(wishlist=wishlist, product=product).exists():
+            messages.info(request, 'Product is already in your wishlist')
+        else:
+            WishlistItems.objects.create(wishlist=wishlist, product=product)
+            messages.success(request, 'Product added to your wishlist successfully')
+        
+        
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
+def delete_wishlist(request,wishlit_item_id):
+
+    item=get_object_or_404(WishlistItems,id=wishlit_item_id)
+    item.delete()
+    
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

@@ -78,8 +78,8 @@
             <thead>
                 <tr>
                     <th>Product Name</th>
-                    <th>Quantity</th>
                     <th>Unit Price</th>
+                    <th>Quantity</th>
                     <th>Total Price</th>
                 </tr>
             </thead>
@@ -87,9 +87,14 @@
                 {% for item in orders  %}
                 <tr>
                     <td>{{item.product_variant.product_variant_slug}}</td>
+    
+                    {% if item.product_variant.product.product_offer is not None and item.product_variant.product.product_offer > 0  %}
+                                         <td class="price" data-title="Price"><span>${{ item.product_variant.product.product_offer }}</span></td>
+                                    {% else %}  
+                                        <td class="price" data-title="Price"><span>${{ item.product_variant.product.sale_price }}</span></td>
+                                    {% endif %}
                     <td>{{item.quantity}}</td>
-                    <td>{{item.product_price}}</td>
-                    <td>{{item.subtotal}}</td>
+                    <td>{{item.sub_total}}</td>
                 </tr>
                 {% endfor %}
             </tbody>

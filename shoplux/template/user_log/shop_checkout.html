@@ -114,7 +114,11 @@
                                 </tr>
                             </tbody>
                         </table>
+                        {% if not addresses %}
+                        <span>Pleas add address !!!!!</span>
+                        {% else %}
                         <a href="{% url 'order_mng:place_order' %}" class="btn btn-fill-out btn-block mt-30">Place Order</a>
+                        {% endif %}
                     </div>
                     <div class="bt-1 border-color-1 mt-30 mb-30"></div>
                     <!-- <div class="payment_method">

@@ -21,10 +21,12 @@ def place_order(request, total=0, quantity=0):
 
     current_user=request.user
     cart_items=CartItem.objects.filter(user=current_user)
+    if not cart_items.exists():  
+        return redirect('log:index')
     first_cart_item = CartItem.objects.filter(user=current_user).first()
     cart=Cart.objects.get(cart_id=first_cart_item.cart.cart_id)
     coupen_id=cart.coupen
-    request.session['coupen_id']=coupen_id.id
+    request.session['coupen_id']=coupen_id.id if coupen_id else None
     cart_count=cart_items.count()
     try:
         
@@ -266,7 +268,7 @@ def payment(request, quantity=0, total=0):
             return render(request,"user_log/razorpay.html", {"grand_total":discounted_total})       
     
        
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def success(request):
     try:
         order_id=request.session.get('order_id')
@@ -322,16 +324,16 @@ def invoice(request,order_id,total=0):
         descount=coupen.discount_rate
         print("helllllllllllooooooooooooo")
         print(descount)
-    grand_total=0
+    grand_total = order.order_total
     for item in orders:
         item.subtotal=item.quantity * item.product_price
         total += item.subtotal
     tax=order.tax
-    if coupen_id is not None:
-        grand_total =Decimal(tax + total) - descount
-        # descount_total=grand_total - descount
-    else:
-        grand_total = tax + total
+    # if coupen_id is not None:
+    #     grand_total =Decimal(tax + total) - descount
+    #     # descount_total=grand_total - descount
+    # else:
+    #     grand_total = tax + total
 
     context={
         'order':order,
