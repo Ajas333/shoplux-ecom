@@ -33,9 +33,8 @@ def variant_color(request, product_id, varient_size):
     
     return color_attribute_values
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def product_details(request, product_id,size_id):
-    if not request.user.is_authenticated:
-        return redirect('log:user_login')
     product = Product.objects.select_related('product_brand').get(id=product_id)
     product_variants = Product_Variant.objects.filter(product_id=product_id)
     print(product_variants)
@@ -67,7 +66,7 @@ def product_details(request, product_id,size_id):
 
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def cart(request, total=0, quantity=0, cart_item=None):
     
     try:
@@ -347,6 +346,7 @@ def checkout(request, total=0, quantity=0, cart_item=None):
     return render(request,'user_log/shop_checkout.html',context)
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def wishlist(request):
     if not request.user.is_authenticated:
         messages.info(request,'login to access wishlist')

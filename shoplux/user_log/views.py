@@ -1,4 +1,4 @@
-from django.shortcuts import render,HttpResponse,redirect
+from django.shortcuts import render,HttpResponse,redirect,get_object_or_404
 from django.contrib.auth.models import User,auth
 from django.contrib import messages
 from .models import Account,Wallet
@@ -10,7 +10,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.core.mail import send_mail
 import random
 from django.core.exceptions import ObjectDoesNotExist
-from product_det.models import Product,Product_Variant
+from product_det.models import Product,Product_Variant,Category
 from Offer_mng.models import ProductOffer
 from user_product_mng.models import Cart,CartItem
 from user_product_mng.views import _cart_id
@@ -47,6 +47,46 @@ def index(request):
         context['product_offers']=product_offers
 
     return render(request, 'user_log/index.html',context)
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def shop(request):
+    categories = Category.objects.all()
+    print(categories)
+    query = request.GET.get('q')
+    if query:
+        products = Product.objects.filter(product_name__icontains=query)
+        product_count = products.count()
+    else:
+        products = Product.objects.all()
+        product_count = products.count()
+    
+    product_variants = Product_Variant.objects.filter(is_active=True)
+    
+    context = {
+        'categories': categories,
+        'products': products,
+        'product_variants': product_variants,
+        'query': query,
+        'product_count' : product_count
+    }
+    return render(request,'user_log/shop.html',context)
+
+def cat_filter(request,cat_id):
+    selected_category = get_object_or_404(Category, pk=cat_id)
+    products = Product.objects.filter(product_catg=selected_category)
+    product_count = products.count()
+    
+    categories = Category.objects.all()
+    product_variants = Product_Variant.objects.filter(is_active=True)
+    
+    context = {
+        'categories': categories,
+        'products': products,
+        'product_variants': product_variants,
+        'query': "",  # No query for category filtering
+        'product_count': product_count
+    }
+    return render(request,'user_log/shop.html',context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_login(request):

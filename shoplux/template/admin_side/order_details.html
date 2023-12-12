@@ -11,25 +11,21 @@
     <div class="card mb-4">
         <header class="card-header">
             <div class="row gx-3">
-                <strong>Order Lists</strong>
-                <!-- <div class="col-lg-4 col-md-6 me-auto">
-                    <input type="text" placeholder="Search..." class="form-control">
+               
+                <div class="col-lg-4 col-md-6 me-auto">
+                    <strong>Order Lists</strong>
                 </div>
                 <div class="col-lg-2 col-6 col-md-3">
-                    <select class="form-select">
-                        <option>Status</option>
-                        <option>Active</option>
-                        <option>Disabled</option>
-                        <option>Show all</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-6 col-md-3">
-                    <select class="form-select">
-                        <option>Show 20</option>
-                        <option>Show 30</option>
-                        <option>Show 40</option>
-                    </select>
-                </div> -->
+                    <form action="" method="post"></form>
+                    
+                        {% csrf_token %}
+                        {{form.status}}
+                        
+                    </div>
+                    <div class="col-lg-2 col-6 col-md-3">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </div>
+                </form>
             </div>
         </header> <!-- card-header end// -->
         <div class="card-body">

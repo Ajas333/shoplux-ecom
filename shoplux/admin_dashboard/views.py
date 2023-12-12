@@ -89,20 +89,19 @@ def sales_report(request):
     except:
         pass
     if request.method == 'POST':
-        print("agathott keryyyyyyyyyyyy")
+       
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         start_date_value = start_date
         end_date_value = end_date
         if start_date and end_date:
-            # Convert the dates to datetime objects
+          
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
-            # Filter orders between start_date and end_date
+           
             orders = orders.filter(created_at__range=(start_date, end_date))
-    print("date........................................")
-    print(start_date  ,  end_date)
+   
     context={
         'orders':orders,
         'start_date_value':start_date_value,

@@ -6,6 +6,8 @@ app_name = 'log'
 
 urlpatterns = [
    path('',views.index,name='index'),
+   path('shop',views.shop,name='shop'),
+   path('cat_filter/<int:cat_id>/',views.cat_filter,name='cat_filter'),
    path('user_login',views.user_login,name='user_login'),
    path('user_signup',views.user_signup,name='user_signup'),
    path('user_logout',views.user_logout,name='user_logout'),

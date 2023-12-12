@@ -1,0 +1,97 @@
+{% extends 'user_log/base.html' %}
+{% load static %}
+{% block title %} Shop {% endblock %}
+{% block  body %}
+
+
+
+
+<section class="mt-50 mb-50">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-9">
+                <div class="shop-product-fillter">
+                    <div class="totall-product">
+                        <p> We found <strong class="text-brand">{{product_count}}</strong> items for you!</p>
+                    </div>
+                    <div class="sort-by-product-area">
+                        <div class="sort-by-cover mr-10">
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="row product-grid-3">
+                    {% if product_count == 0 %}
+                        <p>No products found</p>
+                    {% else %}
+                    {% for product in products %}
+                        <div class="col-lg-4 col-md-4 col-12 col-sm-6">
+                            <div class="product-cart-wrap mb-30">
+                                <div class="product-img-action-wrap">
+                                    <div class="product-img product-img-zoom">
+                                        <a href="{% url 'user_product:product_details' product.id 0 %}">
+                                            <img class="default-img" src="{{product.image.url}}" alt="">
+                                            <!-- <img class="hover-img" src="static/image/shop/product-1-2.jpg" alt=""> -->
+                                        </a>
+                                    </div>
+                                    <div class="product-action-1">
+                                        <a  aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'user_product:add_wishlist' product.id %}"><i class="fi-rs-heart"></i></a>
+                                    </div>
+                                    <div class="product-badges product-badges-position product-badges-mrg">
+                                        <span class="hot">Hot</span>
+                                    </div>
+                                </div>
+                                <div class="product-content-wrap">
+                                    <div class="product-category">
+                                        <a href="{% url 'user_product:product_details' product.id 0 %}">{{product.product_catg.category_name}}</a>
+                                    </div>
+                                    <h2><a href="{% url 'user_product:product_details' product.id 0 %}">{{product.product_name}}</a></h2>
+                                    <div class="rating-result" title="90%">
+                                        <span>
+                                            <span>90%</span>
+                                        </span>
+                                    </div>
+                                    <div class="product-price">
+                                        {% if product.product_offer is not None and product.product_offer > 0 %}
+                                        <span>${{product.product_offer}}</span>
+                                        <span class="old-price">${{product.max_price}}</span>
+                                        {% else %}
+                                        <span>${{product.sale_price}}</span>
+                                        {% endif %}
+                                    </div>
+                                  
+                                </div>
+                            </div>
+                            
+                        </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <!--pagination-->
+                
+            </div>
+            <div class="col-lg-3 primary-sidebar sticky-sidebar">
+                <div class="row">
+                    <div class="col-lg-12 col-mg-6"></div>
+                    <div class="col-lg-12 col-mg-6"></div>
+                </div>
+                <div class="widget-category mb-30">
+                    <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
+                    <ul class="categories">
+                        {% for category in categories %}
+                        {% if category.parent_id is not None %}
+                            <a href="{% url 'log:cat_filter' category.id %}">{{ category.category_name }}</a><br>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                <!-- Fillter By Price -->
+                
+                
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

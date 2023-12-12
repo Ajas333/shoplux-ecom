@@ -92,9 +92,16 @@ def order_list(request):
         return redirect('adminlog:admin_login')
     
     orders = Order.objects.order_by('-created_at')
-
+    form = OrderForm(request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            status = form.cleaned_data['status']
+            if status != 'all':
+                orders = orders.filter(status=status)
     context={
         'orders':orders,
+        'form':form,
+
     }
 
     return render(request,'admin_side/order_details.html',context)
