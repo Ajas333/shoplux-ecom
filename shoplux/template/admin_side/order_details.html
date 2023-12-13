@@ -10,23 +10,29 @@
     </div>
     <div class="card mb-4">
         <header class="card-header">
-            <div class="row gx-3">
-               
-                <div class="col-lg-4 col-md-6 me-auto">
-                    <strong>Order Lists</strong>
-                </div>
-                <div class="col-lg-2 col-6 col-md-3">
-                    <form action="" method="post"></form>
-                    
-                        {% csrf_token %}
-                        {{form.status}}
-                        
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="row gx-3">
+                
+                    <div class="col-lg-4 col-md-6 me-auto">
+                        <strong>Order Lists</strong>
+                    </div>
+                    <div class="col-lg-2 col-6 col-md-3">
+                        <select name="status" class="form-control">
+                            <option value="all" {% if status == 'all' %} selected {% endif %}>All</option>
+                            <option value="New" {% if status == 'New' %} selected {% endif %}>New</option>
+                            <option value="Conformed" {% if status == 'Conformed' %} selected {% endif %}>Conformed</option>
+                            <option value="Shipped" {% if status == 'Shipped' %} selected {% endif %}>Shipped</option>
+                            <option value="Delivered" {% if status == 'Delivered' %} selected {% endif %}>Delivered</option>
+                            <option value="Cancelled" {% if status == 'Cancelled' %} selected {% endif %}>Cancelled</option>
+                            <option value="Return" {% if status == 'Return' %} selected {% endif %}>Return</option>
+                        </select> 
                     </div>
                     <div class="col-lg-2 col-6 col-md-3">
                         <button type="submit" class="btn btn-primary">Filter</button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </header> <!-- card-header end// -->
         <div class="card-body">
             <div class="table-responsive">
@@ -77,12 +83,23 @@
     <div class="pagination-area mt-15 mb-50">
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-start">
-                <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                <li class="page-item"><a class="page-link" href="#">02</a></li>
-                <li class="page-item"><a class="page-link" href="#">03</a></li>
-                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                <li class="page-item"><a class="page-link" href="#">16</a></li>
-                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+                {% if orders.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}">Previous</a></li>
+                {% endif %}
+    
+                {% for i in orders.paginator.page_range %}
+                    {% if orders.number == i %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+    
+                {% if orders.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ orders.paginator.num_pages }}">Last</a></li>
+                {% endif %}
             </ul>
         </nav>
     </div>

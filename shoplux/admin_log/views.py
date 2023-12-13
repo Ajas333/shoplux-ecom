@@ -9,6 +9,7 @@ from django.views.decorators.cache import cache_control
 from order_mng.forms import OrderForm
 from django.core.paginator import Paginator
 from Coupon_Mng.models import Coupon
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 
@@ -91,17 +92,30 @@ def order_list(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
     
+    status='all'
     orders = Order.objects.order_by('-created_at')
     form = OrderForm(request.POST or None)
+
     if request.method == 'POST':
+        form = OrderForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data['status']
             if status != 'all':
                 orders = orders.filter(status=status)
+                
+    paginator = Paginator(orders, 10)  
+    page = request.GET.get('page')
+
+    try:
+        orders = paginator.page(page)
+    except PageNotAnInteger:
+        orders = paginator.page(1)
+    except EmptyPage:
+        orders = paginator.page(paginator.num_pages)
     context={
         'orders':orders,
         'form':form,
-
+        'status':status
     }
 
     return render(request,'admin_side/order_details.html',context)

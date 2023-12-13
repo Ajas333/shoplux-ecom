@@ -221,15 +221,6 @@ def cancell(request,order_id):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-    except Order.DoesNotExist:
-        print("Order does not exist")
-        pass
-
-    except Wallet.DoesNotExist:
-        print("Wallet does not exist")
-      
-        pass
-
     except Exception as e:
         print(e)
        

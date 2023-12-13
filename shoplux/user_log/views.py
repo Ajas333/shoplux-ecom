@@ -16,6 +16,7 @@ from user_product_mng.models import Cart,CartItem
 from user_product_mng.views import _cart_id
 from django.contrib.auth.decorators import login_required
 import re
+from django.views.decorators.cache import never_cache
 
 # Create your views here.
 
@@ -218,6 +219,7 @@ def verify_otp(request):
          return redirect('log:index')
    return render(request,'user_log/otp_verification.html')
 
+@never_cache
 def user_logout(request):
     logout(request)
     return redirect('log:index') 

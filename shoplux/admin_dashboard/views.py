@@ -5,7 +5,9 @@ from django.views.decorators.cache import cache_control
 from order_mng.models import Order
 from datetime import timedelta, datetime
 from django.db.models import Count
+from user_log.models import Account
 from django.db.models.functions import TruncDate,TruncMonth, TruncYear
+from django.db.models import Sum, Q
 
 
 # Create your views here.
@@ -15,12 +17,20 @@ from django.db.models.functions import TruncDate,TruncMonth, TruncYear
 def dashboard(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
-
+ 
     product_count=Product.objects.count()
     category_count=Category.objects.count()
     orders=Order.objects.all()
+    last_orders= Order.objects.order_by('-created_at')[:5]
     orders_count=orders.count()
-
+    total_users_count = Account.objects.count()
+    total = 0
+    for order in orders:
+        if order.status == 'Delivered':
+            total += order.order_total
+        if (order.payment and order.payment.payment_method == 'razorpay') or (order.payment and order.payment.payment_method == 'Wallet'):
+            total += order.order_total
+    revenue=int(total)
     end_date = datetime.now()
     start_date = end_date - timedelta(days=7)
 
@@ -58,7 +68,10 @@ def dashboard(request):
     yearlyDates = [entry['year'].strftime('%Y') for entry in yearly_order_counts]
     yearlyCounts = [entry['order_count'] for entry in yearly_order_counts]
 
-   
+    statuses = ['Delivered', 'New', 'Conformed', 'Cancelled', 'Return','Shipped']
+    order_counts = [Order.objects.filter(status=status).count() for status in statuses]
+
+    print(order_counts)
     context={
         'product_count':product_count,
         'category_count':category_count,
@@ -69,6 +82,11 @@ def dashboard(request):
         'monthlyCounts':monthlyCounts,
         'yearlyDates':yearlyDates,
         'yearlyCounts':yearlyCounts,
+        'last_orders': last_orders,
+        'revenue':revenue,
+        'total_users_count': total_users_count,
+        'statuses': statuses,
+        'order_counts': order_counts,
     }
 
    
