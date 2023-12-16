@@ -271,8 +271,14 @@ def verify_otp_forgot_password(request):
          return redirect('log:user_login')
     return render(request,'user_log/otp_verification.html')
 
+def contact_page(request):
 
-   
+    return render(request, 'user_log/contact_page.html')
+
+def about(request):
+
+    return render(request, 'user_log/about.html')
+
 
 #    validation
 

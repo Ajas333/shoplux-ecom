@@ -422,3 +422,5 @@ def delete_wishlist(request,wishlit_item_id):
     item.delete()
     
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
