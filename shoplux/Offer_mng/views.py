@@ -19,11 +19,8 @@ def add_product_offer(request):
         if form.is_valid():
             product_offer = form.save()
             product = product_offer.product
-            print(product)
             discount=product_offer.discount
-            print(discount)
             discounted_price = product.sale_price - ((discount / 100) * product.sale_price)
-            print(discounted_price)
             product.product_offer = discounted_price
             product.save()
             

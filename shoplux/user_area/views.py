@@ -18,7 +18,9 @@ from django.contrib.auth.decorators import login_required
 @login_required(login_url='log:user_login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_profile(request,user_id):
-    
+    if not request.user.is_authenticated:
+        return redirect('log:user_login')
+
     form = AddressForm()
     account = get_object_or_404(Account, id=user_id)
     wallet=get_object_or_404(Wallet,user=account)
@@ -26,7 +28,6 @@ def user_profile(request,user_id):
     addresses = Address.objects.filter(account=account)
     orders=Order.objects.filter(user=request.user)
     
-    print(wallethistory)
     context={
         'form':form,
         'addresses':addresses,
@@ -102,11 +103,14 @@ def change_password(request,user_id):
 def add_address(request,user_id):
 
     account = get_object_or_404(Account, id=user_id)
+    existing_addresses = Address.objects.filter(account=account)
     if request.method == 'POST':
         form = AddressForm(request.POST)
         if form.is_valid():
             address_instance = form.save(commit=False)
-            address_instance.account = account  # Set the account for the address
+            address_instance.account = account  
+            if not existing_addresses.exists(): 
+                address_instance.is_default = True
             address_instance.save()
 
             messages.success(request, 'Address added successfully.')
@@ -117,6 +121,19 @@ def add_address(request,user_id):
         form = AddressForm()
     return render(request, 'user_log/profile.html', {'form': form})
 
+
+def delete_address(request,address_id):
+
+    try:
+        address=Address.objects.get(id=address_id)
+        address.delete()
+
+        messages.info(request, 'address delete successfully')
+    except:
+        messages.error(request,'something error happends..')
+
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @login_required(login_url='log:user_login')
@@ -154,24 +171,18 @@ def order_details(request,order_id, total=0, quantity=0):
     
     order=Order.objects.get(id=order_id)
     order_items=OrderProduct.objects.filter(order=order_id)
-    print(order_items)
 
     address=order.address
-    print(address)
     
     grand_total = order.order_total
     tax = 0
     for order_item in order_items:
         product_variant = order_item.product_variant
-        print(product_variant.product.product_offer    )
         if product_variant:  # Check if the product variant exists
             try:  
                 if product_variant.product.product_offer is not None and product_variant.product.product_offer > 0:
-                      print("haaaaaaaaaaaaallllllllllloooooooooooooooooo")
                       subtotal = product_variant.product.product_offer * order_item.quantity
-                      print(subtotal)
                 else:
-                       print("onnulllaaaa myreeeeee")
                        subtotal = product_variant.product.sale_price * order_item.quantity
             except:
                      pass
@@ -182,7 +193,6 @@ def order_details(request,order_id, total=0, quantity=0):
     tax = (2 * total) / 100
     if order.coupen:
         coupen=Coupon.objects.get(coupon_id=order.coupen)
-        print(coupen.discount_rate)
         descount=coupen.discount_rate
         
     context={
@@ -247,11 +257,9 @@ def return_order(request,order_id):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
     except Order.DoesNotExist:
-        print("Order does not exist")
         pass
 
     except Wallet.DoesNotExist:
-        print("Wallet does not exist")
       
         pass
 

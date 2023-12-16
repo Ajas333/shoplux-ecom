@@ -52,7 +52,6 @@ def index(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def shop(request):
     categories = Category.objects.all()
-    print(categories)
     query = request.GET.get('q')
     if query:
         products = Product.objects.filter(product_name__icontains=query)
@@ -192,7 +191,6 @@ def user_signup(request):
 
 def sent_otp(request):
     random_num=random.randint(1000,9999)
-    print(random_num)
     request.session['OTP_Key']=random_num
     send_mail(
     "OTP AUTHENTICATING shoplux",
@@ -211,7 +209,6 @@ def verify_otp(request):
    user=Account.objects.get(email=request.session['email'])
    if request.method=="POST":
       if str(request.session['OTP_Key']) != str(request.POST['otp']):
-         print(request.session['OTP_Key'],request.POST['otp'])
          user.is_active=False
       else:
          login(request,user)

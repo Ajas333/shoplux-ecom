@@ -70,9 +70,6 @@ def available(request,category_id):
 
     
     cat_list=Category.objects.filter(parent_id=category_id)
-    for i in cat_list.values():
-        print(i)
-    
     for category in cat_list:
         if category.is_available:
             category.is_available=False
@@ -487,7 +484,6 @@ def update_product(request, product_id):
             form.save()
             return redirect('product_details:product_list')
         else:
-            print(form.errors)
             context = {
                 'form': form,
                 'product': product,
@@ -497,7 +493,7 @@ def update_product(request, product_id):
 
     else:
         form = CreateProductForm(instance=product)
-        # print(form)
+     
     context = {
         'form': form,
         'product': product,
@@ -527,6 +523,7 @@ def add_veriants(request,product_id):
         return redirect('adminlog:admin_login')
     try:
         product = Product.objects.get(id=product_id)
+        product_variants=Product_Variant.objects.filter(product=product)
     except Product.DoesNotExist:
         return HttpResponse("Product not found", status=404)
     attributes = Atribute.objects.prefetch_related('atribute_value_set').filter(is_active=True)
@@ -557,14 +554,14 @@ def add_veriants(request,product_id):
 
     context ={
         "product":product,
-        'attribute_dict':attribute_dict
+        'attribute_dict':attribute_dict,
+        'product_variants':product_variants
     }
     return render(request, 'admin_side/add_verients.html',context)
     
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def edit_varient(request,product_variant_id):
-    print(product_variant_id)
     if not request.user.is_authenticated:
         return redirect('adminlog:admin_login')
     if not request.user.is_superuser:
@@ -574,16 +571,14 @@ def edit_varient(request,product_variant_id):
     product_variant=get_object_or_404(Product_Variant, id=product_variant_id)
     atribute_values = product_variant.atributes.all()
 
-    for atribute_value in atribute_values:
-        print(atribute_value.atribute_value)
-
+   
     attributes = Atribute.objects.prefetch_related('atribute_value_set').filter(is_active=True)
 
     attribute_dict = {}
     for attribute in attributes:
         attribute_values = attribute.atribute_value_set.filter(is_active=True)
         attribute_dict[attribute.atribute_name] = attribute_values
-    #to show how many atribute in fronend
+    
     attribute_values_count = attributes.count() 
     
     context={
@@ -601,7 +596,7 @@ def edit_varient(request,product_variant_id):
         product_variant.save()
         product_variant.atributes.set(attribute_ids)
 
-        # return redirect('product_details:update_product')
+       
         return redirect('product_details:update_product', product_id=product_variant.product.id)
 
 

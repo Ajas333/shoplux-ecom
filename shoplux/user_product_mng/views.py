@@ -12,6 +12,9 @@ from django.db.models import Q,Count
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 import datetime
+from user_log.forms import AddressForm
+from user_log.models import Account
+from django.urls import reverse
 
 
 def handle_color_selection(request):
@@ -37,7 +40,6 @@ def variant_color(request, product_id, varient_size):
 def product_details(request, product_id,size_id):
     product = Product.objects.select_related('product_brand').get(id=product_id)
     product_variants = Product_Variant.objects.filter(product_id=product_id)
-    print(product_variants)
     
     color_id = request.session.get('color_id')
     size_attribute_values = Atribute_Value.objects.filter(atribute__atribute_name='size').distinct()
@@ -230,7 +232,6 @@ def add_cart(request, product_id, varient_size):
     
 def increment_cart(request, cart_item_id):
     cart_item=get_object_or_404(CartItem, id=cart_item_id)
-    print(cart_item)
     try:
         if cart_item.product_variant.stock > cart_item.quantity:
             cart_item.quantity +=1
@@ -267,6 +268,7 @@ def checkout(request, total=0, quantity=0, cart_item=None):
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
+        form = AddressForm()
        
     except ObjectDoesNotExist:
         cart_items = []  
@@ -337,6 +339,7 @@ def checkout(request, total=0, quantity=0, cart_item=None):
         'grand_total': grand_total,
         'addresses':addresses,
         'address':address,
+        'form':form,
     }
     try:
        if descount is not None:
@@ -346,18 +349,46 @@ def checkout(request, total=0, quantity=0, cart_item=None):
     return render(request,'user_log/shop_checkout.html',context)
 
 
+
+@login_required(login_url='log:user_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def add_address_checkout(request,user_id):
+
+    account = get_object_or_404(Account, id=user_id)
+    existing_addresses = Address.objects.filter(account=account)
+    if request.method == 'POST':
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address_instance = form.save(commit=False)
+            address_instance.account = account  
+            if not existing_addresses.exists(): 
+                address_instance.is_default = True
+            address_instance.save()
+
+            messages.success(request, 'Address added successfully.')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        else:
+            messages.error(request, 'Invalid form data. Please check the entered information.')
+    else:
+        form = AddressForm()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def wishlist(request):
     if not request.user.is_authenticated:
         messages.info(request,'login to access wishlist')
         return redirect('log:user_login')
     else:
-        wishlist=Wishlist.objects.get(user=request.user)
-        wishlist_items=WishlistItems.objects.filter(wishlist=wishlist)
-        print(wishlist_items)
-        context={
-            'wishlist_items':wishlist_items
-        }
+        try:
+            wishlist=Wishlist.objects.get(user=request.user)
+            wishlist_items=WishlistItems.objects.filter(wishlist=wishlist)
+            context={
+                'wishlist_items':wishlist_items
+            }
+        except:
+            pass
     return render(request,'user_log/wishlist.html',context)
 
 
@@ -367,16 +398,13 @@ def add_wishlist(request,product_id):
         return redirect('log:user_login')
     else:
         try:
-            print("wishlist already exist.....................................")
             wishlist=Wishlist.objects.get(user=request.user)
            
         except:
-            print("create new wishlist.................................")
             wishlist=Wishlist.objects.create(user=request.user)
             
 
         product=get_object_or_404(Product,id=product_id)
-        print(product)
 
         if WishlistItems.objects.filter(wishlist=wishlist, product=product).exists():
             messages.info(request, 'Product is already in your wishlist')

@@ -57,7 +57,7 @@
                                                                 <p><strong>Email:</strong> {{ user.email }}</p>
                                                             {% endif %}
 
-                                                            {% if user %}
+                                                            {% if user.phone %}
                                                                 <p><strong>Phone:</strong> {{ user.phone }}</p>
                                                             {% endif %}
                                                             {% for address in addresses %}
@@ -265,6 +265,7 @@
                                                         <button class=" btn btn-sm" href="#" class="btn-small" data-toggle="modal" data-target="#editaddressModal{{ address.id }}">
                                                             Edit
                                                         </button>
+                                                        <a href="{% url 'user_area:delete_address' address.id %}" class=" btn btn-sm">Delete</a>
                                                     </div>
                                                 </div>
                                                  <!-- modal -->

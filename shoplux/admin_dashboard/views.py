@@ -71,7 +71,7 @@ def dashboard(request):
     statuses = ['Delivered', 'New', 'Conformed', 'Cancelled', 'Return','Shipped']
     order_counts = [Order.objects.filter(status=status).count() for status in statuses]
 
-    print(order_counts)
+    
     context={
         'product_count':product_count,
         'category_count':category_count,

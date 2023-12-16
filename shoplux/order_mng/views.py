@@ -33,7 +33,6 @@ def place_order(request, total=0, quantity=0):
         if cart.coupen is None:
 
             discount=cart.coupen.discount_rate
-            print(discount)
     except:
         pass
     if cart_count<=0:
@@ -143,8 +142,6 @@ def payment(request, quantity=0, total=0):
         return redirect('log:index')
     
     tax = (2 * total) / 100
-    print("taxum totalum,......................")
-    print( tax, total)
     coupen_id=request.session.get('coupen_id')
     if coupen_id is not None:
         coupen=Coupon.objects.get(id=coupen_id)
@@ -250,7 +247,6 @@ def payment(request, quantity=0, total=0):
         
 
     elif payment_option == "razorpay":
-            print("Selected Payment Option: RazorPay")
             discounted_total = float(grand_total)
             request.session['discounted_total'] = discounted_total
             discounted_total = int(discounted_total * 100)
@@ -314,16 +310,12 @@ def invoice(request,order_id,total=0):
     try:
         order=Order.objects.get(id=order_id)
         coupen_id=order.coupen
-        print(coupen_id)
         orders=OrderProduct.objects.filter(order=order)
-        print("haiiiiiiiiiiiiiiiiii")
     except:
         pass
     if coupen_id is not None:
         coupen=Coupon.objects.get(coupon_id=coupen_id)
         descount=coupen.discount_rate
-        print("helllllllllllooooooooooooo")
-        print(descount)
     grand_total = order.order_total
     for item in orders:
         item.subtotal=item.quantity * item.product_price

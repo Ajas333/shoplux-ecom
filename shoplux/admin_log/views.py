@@ -7,7 +7,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from order_mng.forms import OrderForm
-from django.core.paginator import Paginator
 from Coupon_Mng.models import Coupon
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -53,21 +52,27 @@ def users_list(request):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
     
-    search_query=request.GET.get('query')
+    search_query = request.GET.get('query')
 
     if search_query:
-         users = Account.objects.filter(username__icontains=search_query)
+        user_list = Account.objects.filter(username__icontains=search_query)
     else:
-         users = Account.objects.all()
-    paginator=Paginator(users,5)
-    page_number=request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+        user_list = Account.objects.all()
+
+    paginator = Paginator(user_list, 10)
+    page = request.GET.get("page")
+    try:
+        users = paginator.page(page)
+    except PageNotAnInteger:
+        users = paginator.page(1)
+    except EmptyPage:
+        users = paginator.page(paginator.num_pages)
+   
     context = {
         'users': users,
-        'page_obj':page_obj
     }
       
-    return render(request,'admin_side/users_list.html',context)
+    return render(request, 'admin_side/users_list.html', context)
 
 
 @login_required(login_url='adminlog:admin_login')
@@ -186,7 +191,7 @@ def order_details(request,order_id, total=0, quantity=0):
 def cancell_order(request,order_id):
     if not request.user.is_superuser:
         return redirect('adminlog:admin_login')
-    print(order_id)
+    
     try:
         order=Order.objects.get(id=order_id)
     except Exception as e:

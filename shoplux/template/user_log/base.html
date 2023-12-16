@@ -21,6 +21,18 @@
    
 {% block head %}
 {% endblock %}
+<style>
+    /* For screens below 992px width */
+    @media (max-width: 991px) {
+        .header-top,
+        .header-middle {
+            display: block !important;
+        }
+        .header-top.header-info{
+            display: none;
+        }
+    }
+</style>
 </head>
 
 <body>
@@ -29,21 +41,19 @@
         <div class="header-top header-top-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="row align-items-center">
-                    <div class="col-xl-3 col-lg-4">
+                    <div class="col-xl-3 d-none d-lg-block col-lg-4">
                         <div class="header-info">
                             <ul>
-                                <li><i class="fi-rs-smartphone"></i> <a href="#">(+01) - 2345 - 6789</a></li>
-                                <li><i class="fi-rs-marker"></i><a  href="page-contact.html">Our location</a></li>
+                                <li><i class="fi-rs-smartphone"></i> <a href="#">+91 - 7994119979</a></li>
+                                
                             </ul>
                         </div>
                     </div>
-                    <div class="col-xl-6 col-lg-4">
+                    <div class="col-xl-6 col-lg-4 d-none d-lg-block">
                         <div class="text-center">
                             <div id="news-flash" class="d-inline-block">
                                 <ul>
-                                    <!-- <li>Get great devices up to 50% off <a href="shop-grid-right.html">View details</a></li> -->
                                     <li>Supper Value Deals - Save more with coupons</li>
-                                    <!-- <li>Trendy 25silver jewelry, save up 35% off today <a href="shop-grid-right.html">Shop now</a></li> -->
                                 </ul>
                             </div>
                         </div>
@@ -51,24 +61,17 @@
                     <div class="col-xl-3 col-lg-4">
                         <div class="header-info header-info-right">
                             <ul>
-                                <li>
-                                    <a class="language-dropdown-active" href="#"> <i class="fi-rs-world"></i> English <i class="fi-rs-angle-small-down"></i></a>
-                                    <ul class="language-dropdown">
-                                        <li><a href="#"><img src="{% static 'image/theme/flag-fr.png' %}" alt="">Français</a></li>
-                                        <li><a href="#"><img src="{% static 'image/theme/flag-dt.png' %}" alt="">Deutsch</a></li>
-                                        <li><a href="#"><img src="{% static 'image/theme/flag-ru.png' %}" alt="">Pусский</a></li>
-                                    </ul>
-                                </li>
+                                
                                 <li>
                                     {% if request.user.is_authenticated %}
                                    <a href="{% url 'user_area:user_profile' user.id %}"> <p class="text-success">{{ request.user.username }}</p> </a>
                                 </li>
                                 <li>
                                     <a href="{% url 'log:user_logout' %}">Logout</a>
-                                </li>
-                            {% else %}
+                                    </li>
+                                 {% else %}
                                 <li><i class="fi-rs-user"></i><a href="{% url 'log:user_login' %}">Log In / Sign Up</a></li>
-                            {% endif %}
+                                 {% endif %}
                             </ul>
                         </div>
                     </div>
@@ -86,7 +89,7 @@
                             <form action="{% url 'log:shop' %}" method="GET">
                                 {% csrf_token %}
                                 <input type="text" name="q" value="{{ query }}" placeholder="Search for items...">
-                                <input type="submit" style="display: none;">
+                                <input type="submit" style="display: none;"> 
                             </form>
                         </div>
                         <span></span>
@@ -180,7 +183,7 @@
                                 <strong>Address: </strong>562 Wellington Road, Street 32, San Francisco
                             </p>
                             <p class="wow fadeIn animated">
-                                <strong>Phone: </strong>+01 2222 365 /(+91) 01 2345 6789
+                                <strong>Phone: </strong>+91 7994119979
                             </p>
                             <p class="wow fadeIn animated">
                                 <strong>Hours: </strong>10:00 - 18:00, Mon - Sat
@@ -209,12 +212,10 @@
                     <div class="col-lg-2  col-md-3">
                         <h5 class="widget-title wow fadeIn animated">My Account</h5>
                         <ul class="footer-list wow fadeIn animated">
-                            <li><a href="#">Sign In</a></li>
-                            <li><a href="#">View Cart</a></li>
-                            <li><a href="#">My Wishlist</a></li>
-                            <li><a href="#">Track My Order</a></li>
-                            <li><a href="#">Help</a></li>
-                            <li><a href="#">Order</a></li>
+                            <li><a href="#">Profile</a></li>
+                            <li><a href="{% url 'user_product:cart' %}">View Cart</a></li>
+                            <li><a href="{% url 'user_product:wishlist' %}">My Wishlist</a></li>
+                            
                         </ul>
                     </div>
                     <div class="col-lg-4">

@@ -31,13 +31,23 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Availability</th>
+                                    <th>Coupen ID</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Discount</th>
+                                    <th>Availablity</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                
+                                {% for coupen in coupens %}
+                                    <tr>
+                                        <th>{{coupen.coupon_id}}</th>
+                                        <th>{{coupen.start_date}}</th>
+                                        <th>{{coupen.end_date}}</th>
+                                        <th>{{coupen.discount_rate}}</th>
+                                        <th>{{coupen.is_active}}</th>
+                                    </tr>
+                                {% endfor %}
 
                             </tbody>
                         </table>
