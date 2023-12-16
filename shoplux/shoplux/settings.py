@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dll8a9q(d9q=*4!3ap_u2mc4v4=zfsd*+%!#zuhh)lky8*fmj*'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG',default=False,cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -82,12 +83,12 @@ WSGI_APPLICATION = 'shoplux.wsgi.application'
 AUTH_USER_MODEL = 'user_log.Account'
 
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True  # Use TLS for secure communication
-EMAIL_HOST_USER = 'shoplux333@gmail.com'
-EMAIL_HOST_PASSWORD = 'oihk odqq nibk bgfm'
-EMAIL_DEBUG = True
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_DEBUG = config('EMAIL_DEBUG')
 
 
 # Database
@@ -96,9 +97,9 @@ EMAIL_DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'shoplux',
-        'USER': 'postgres',
-        'PASSWORD': 'admin@123',
+        'NAME': config('NAME'),
+        'USER': config('USER'),
+        'PASSWORD':config('PASSWORD'),
         'HOST': 'localhost',  # Use the actual host if it's not on localhost
         'PORT': '5432',       # Use the actual PostgreSQL port if it's not the default
     }
