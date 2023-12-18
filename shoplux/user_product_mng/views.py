@@ -264,7 +264,9 @@ def remove_cart_item(request,cart_item_id):
 @login_required(login_url='log:user_login')
 def checkout(request, total=0, quantity=0, cart_item=None):
     if not request.user.is_authenticated:
+        messages.info(request,'pleas login to checkout')
         return redirect('log:user_login')
+    form = AddressForm()
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
@@ -375,12 +377,15 @@ def add_address_checkout(request,user_id):
 
 
 
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def wishlist(request):
     if not request.user.is_authenticated:
         messages.info(request,'login to access wishlist')
         return redirect('log:user_login')
     else:
+        context = {}
         try:
             wishlist=Wishlist.objects.get(user=request.user)
             wishlist_items=WishlistItems.objects.filter(wishlist=wishlist)

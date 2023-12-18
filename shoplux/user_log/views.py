@@ -59,6 +59,7 @@ def shop(request):
     else:
         products = Product.objects.all()
         product_count = products.count()
+        query=""
     
     product_variants = Product_Variant.objects.filter(is_active=True)
     

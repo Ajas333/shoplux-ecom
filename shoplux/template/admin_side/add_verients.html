@@ -22,7 +22,7 @@
                        
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" >
                         {% csrf_token %}
                         <div class="row">
               
@@ -47,10 +47,7 @@
                                     <input type="text" class="form-control" name="stock"> 
                                 </div>
                                 <div class="card-body">
-                                    <div class="input-upload">
-                                        <label for="variant_image">Image</label>
-                                        <input class="form-control" type="file" required="True" name='thumbnail'>
-                                    </div>
+                                    
                                 </div>
                             
                             </div>
@@ -101,7 +98,7 @@
                         <tbody>
                             {% for product_variant in product_variants %}
                             <tr>
-                                <th><img src="{{product_variant.thumbnail_image.url}}" class="img-sm img-thumbnail" alt="Item"></th>
+                                <th><img src="{{product_variant.product.image.url}}" class="img-sm img-thumbnail" alt="Item"></th>
                                 <th>{{product.product_name}}</th>
                                 <!-- <th>{{product_variant.product_variant_slug}}</th> -->
                                 <th>{{ product.sku_id }}</th>

@@ -148,31 +148,26 @@ def payment(request, quantity=0, total=0):
         
     grand_total=request.session.get('grand_total')
 
-    order=None
-    try:
-        order = Order.objects.get(user=request.user, is_ordered=False)
-    except Order.DoesNotExist:
-         pass
-    if not order:
-        order = Order.objects.create(
-            user=request.user,
-            address=new_address,
-            order_total=grand_total,
-            tax=request.session.get('tax'),
-            ip=request.META.get('REMOTE_ADDR'),
-        )
-        if coupen_id is not None:
-            order.coupen=coupen
-        yr=int(datetime.date.today().strftime('%Y'))
-        dt=int(datetime.date.today().strftime('%d'))
-        mt=int(datetime.date.today().strftime('%m'))
-        d= datetime.date(yr, mt, dt)
-        current_date= d.strftime("%Y%m%d")
+   
+    order = Order.objects.create(
+        user=request.user,
+        address=new_address,
+        order_total=grand_total,
+        tax=request.session.get('tax'),
+        ip=request.META.get('REMOTE_ADDR'),
+    )
+    if coupen_id is not None:
+        order.coupen=coupen
+    yr=int(datetime.date.today().strftime('%Y'))
+    dt=int(datetime.date.today().strftime('%d'))
+    mt=int(datetime.date.today().strftime('%m'))
+    d= datetime.date(yr, mt, dt)
+    current_date= d.strftime("%Y%m%d")
 
-        order_number=current_date + str(order.id)
-    
-        order.order_id = order_number
-        order.save()
+    order_number=current_date + str(order.id)
+
+    order.order_id = order_number
+    order.save()
 
     existing_order_products = OrderProduct.objects.filter(order=order)
     if not existing_order_products.exists():

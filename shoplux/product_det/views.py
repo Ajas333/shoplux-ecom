@@ -546,7 +546,6 @@ def add_veriants(request,product_id):
         verient=Product_Variant(
             product=product,
             stock=stock,
-            thumbnail_image=request.FILES['thumbnail']
         )    
         verient.save()
         verient.atributes.set(attribute_ids)
