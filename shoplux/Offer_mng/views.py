@@ -3,6 +3,7 @@ from .forms import ProductOfferForm
 from django.http import HttpResponse,HttpResponseRedirect
 from .models import ProductOffer
 from product_det.models import Product
+from django.shortcuts import get_object_or_404
 
 
 
@@ -30,3 +31,8 @@ def add_product_offer(request):
         form = ProductOfferForm()
      
     return render(request, 'admin_side/product_offer.html',{'form': form , 'product_offers': product_offers})
+
+def delete_offer(request,offer_id):
+    product_offer = get_object_or_404(ProductOffer, pk=offer_id)
+    product_offer.delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))  

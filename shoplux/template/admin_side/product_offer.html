@@ -37,6 +37,7 @@
                                     <th>End Date</th>
                                     <th>Image</th>
                                     <th>Is Active</th>
+                                    <th>action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -51,6 +52,7 @@
                                     <td>no image</td>
                                     {% endif %}
                                     <td>{{ offer.is_active }}</td>
+                                    <td><a href="{% url 'offer:delete_offer' offer.id %}">Delete</a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
