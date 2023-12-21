@@ -74,7 +74,7 @@
 
                             {% for order_item in order_items %}
                             <tr>
-                                <td><img src="{{ order_item.product_variant.thumbnail_image.url }}" alt="{{ order_item.product_variant.product.name }}" width="100"></td>
+                                <td><img src="{{ order_item.product_variant.product.image.url }}" alt="{{ order_item.product_variant.product.name }}" width="100"></td>
                                 <td>{{ order_item.product_variant.product_variant_slug }} <br>Size:{{order_item.size}}<br> Color:{{order_item.color}}</td>
                                 
                                     {% if order_item.product_variant.product.product_offer is not None and order_item.product_variant.product.product_offer > 0  %}

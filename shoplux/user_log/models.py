@@ -2,8 +2,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.conf import settings 
-# from django.utils import timezone
-# from django.contrib.auth.models import AbstractBaseUser, UserManager,PermissionsMixin,Permission,Group
 
 
 
